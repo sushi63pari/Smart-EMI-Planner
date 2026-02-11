@@ -1,0 +1,5 @@
+{
+  "name": "Smart EMI & Amortization Planner",
+  "description": "A comprehensive EMI calculator featuring dynamic interest rate changes, part-payment management (reduce tenure or EMI), and interactive amortization charts.",
+  "requestFramePermissions": []
+}
