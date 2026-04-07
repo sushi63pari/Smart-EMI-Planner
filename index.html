@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script>
       tailwind.config = {
+        darkMode: 'class',
         theme: {
           extend: {
             fontFamily: {
@@ -18,6 +19,8 @@
               secondary: '#10B981', // Emerald 500
               accent: '#F59E0B', // Amber 500
               dark: '#1E293B', // Slate 800
+              'davys-gray': '#555555',
+              'smoke-gray': '#708090',
             }
           }
         }
@@ -55,8 +58,10 @@
   }
 }
 </script>
+<link rel="stylesheet" href="/index.css">
 </head>
   <body>
     <div id="root"></div>
-  </body>
+  <script type="module" src="/index.tsx"></script>
+</body>
 </html>

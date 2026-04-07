@@ -2,7 +2,16 @@ import { LoanInput, LoanEvent, ScheduleItem, CalculationResult, EventType, PartP
 
 export const calculatePMT = (principal: number, monthlyRate: number, months: number): number => {
   if (monthlyRate === 0) return principal / months;
+  if (months <= 0) return principal;
   return (principal * monthlyRate * Math.pow(1 + monthlyRate, months)) / (Math.pow(1 + monthlyRate, months) - 1);
+};
+
+export const calculateNPER = (principal: number, monthlyRate: number, emi: number): number => {
+  if (monthlyRate === 0) return principal / emi;
+  const interest = principal * monthlyRate;
+  if (emi <= interest + 0.01) return 600; // Cap at 50 years if EMI doesn't cover interest
+  const val = 1 - (interest / emi);
+  return -Math.log(val) / Math.log(1 + monthlyRate);
 };
 
 export const calculateAmortizationSchedule = (
@@ -26,30 +35,33 @@ export const calculateAmortizationSchedule = (
   let totalPrepayment = 0;
 
   // We loop until principal is zero or we reach a safety limit (to prevent infinite loops)
-  const MAX_MONTHS = inputs.tenureMonths * 3; 
+  const MAX_MONTHS = 600; // 50 years max
   let month = 1;
 
-  while (currentPrincipal > 1 && month <= MAX_MONTHS) { // threshold > 1 to avoid floating point issues near 0
+  const start = inputs.startDate ? new Date(inputs.startDate) : new Date();
+
+  while (currentPrincipal > 0.1 && month <= MAX_MONTHS) {
+    // Calculate date for this month
+    const currentDate = new Date(start);
+    currentDate.setMonth(start.getMonth() + month - 1);
+    const dateStr = currentDate.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
+
     // 1. Check for events occurring at the start of this month
     const monthEvents = sortedEvents.filter(e => e.month === month);
     let prepaymentThisMonth = 0;
+    let emiChangedThisMonth = false;
+    const previousEMI = currentEMI;
 
     for (const event of monthEvents) {
       if (event.type === EventType.RATE_CHANGE) {
         currentRate = event.value;
         currentMonthlyRate = currentRate / 12 / 100;
-        // Recalculate EMI based on new rate and remaining tenure (approx)
-        // Note: For rate changes, banks usually keep tenure same and increase EMI, 
-        // OR keep EMI same and increase tenure. Here we assume we recalculate EMI to fit remaining original tenure logic
-        // unless specified otherwise. Standard practice: Recalculate EMI to finish in remaining original time (unless extended).
-        // However, to keep it consistent with "Reduce EMI" vs "Reduce Tenure" logic generally:
-        // A simple approach: Recalculate EMI required to clear balance in remaining scheduled months.
-        const remainingMonthsIdeally = Math.max(1, inputs.tenureMonths - month + 1);
-        
-        // If we previously reduced tenure, our target remaining might be different. 
-        // Let's stick to: Recalculate EMI to clear debt over currently projected remaining months.
-        // Actually, easiest way: Recalculate EMI for remaining schedule.
+        // Recalculate EMI based on new rate and currently tracked remaining tenure
+        // This ensures that if tenure was previously reduced, we keep that reduced tenure.
         currentEMI = calculatePMT(currentPrincipal, currentMonthlyRate, currentTenureRemaining);
+        if (Math.abs(currentEMI - previousEMI) > 0.1) {
+          emiChangedThisMonth = true;
+        }
       } 
       else if (event.type === EventType.PART_PAYMENT) {
         const paymentAmount = event.value;
@@ -57,67 +69,64 @@ export const calculateAmortizationSchedule = (
         currentPrincipal -= paymentAmount;
         totalPrepayment += paymentAmount;
 
-        if (currentPrincipal <= 0) {
+        if (currentPrincipal <= 0.1) {
           currentPrincipal = 0;
-          break; // Loop will handle exit
+          break;
         }
 
         if (event.strategy === PartPaymentStrategy.REDUCE_EMI) {
            // Recalculate EMI for same remaining tenure
            currentEMI = calculatePMT(currentPrincipal, currentMonthlyRate, currentTenureRemaining);
+           if (Math.abs(currentEMI - previousEMI) > 0.1) {
+             emiChangedThisMonth = true;
+           }
         } else {
-           // REDUCE_TENURE: Keep EMI same (do nothing to currentEMI), tenure will naturally shorten
-           // Exception: If currentEMI is now > currentPrincipal + interest, it will finish next month.
+           // REDUCE_TENURE: Keep EMI same, but update our tracking of remaining tenure 
+           // so future events (like rate changes) respect this shorter duration.
+           if (currentPrincipal > 0 && currentEMI > 0) {
+             const nper = calculateNPER(currentPrincipal, currentMonthlyRate, currentEMI);
+             currentTenureRemaining = Math.max(1, Math.ceil(nper));
+           }
         }
       }
     }
 
-    if (currentPrincipal <= 0) {
-       // Paid off by prepayment
-       break;
-    }
+    if (currentPrincipal <= 0.1) break;
 
     const openingBalance = currentPrincipal;
     const interest = openingBalance * currentMonthlyRate;
     
-    // Calculate Principal Component
-    // If it's the last payment or EMI is huge, cap it.
     let principalComponent = currentEMI - interest;
-    
-    // Adjust for final month
     let paidEMI = currentEMI;
     
     if (openingBalance + interest <= currentEMI) {
-        // Final payment
         paidEMI = openingBalance + interest;
         principalComponent = openingBalance;
-    } else {
-        // If principal component is negative (interest > EMI), we have a problem (negative amortization).
-        // In a real app, we'd warn the user or force a higher EMI. 
-        // Here, we'll let it grow but typically EMI > Interest.
     }
 
     const closingBalance = openingBalance - principalComponent;
 
     schedule.push({
       month,
+      date: dateStr,
       openingBalance,
       emi: paidEMI,
       interestComponent: interest,
       principalComponent,
-      closingBalance: closingBalance < 0.1 ? 0 : closingBalance, // Round near zero
+      closingBalance: closingBalance < 0.1 ? 0 : closingBalance,
       prepayment: prepaymentThisMonth,
-      rate: currentRate
+      rate: currentRate,
+      emiChanged: emiChangedThisMonth
     });
 
     totalInterest += interest;
     currentPrincipal = closingBalance;
     
-    if (currentPrincipal < 0.1) currentPrincipal = 0; // Snap to zero
+    if (currentPrincipal < 0.1) currentPrincipal = 0;
 
     month++;
-    currentTenureRemaining--;
-    if(currentTenureRemaining < 1) currentTenureRemaining = 1; // Safety for recalc
+    // Decrement our tracked remaining tenure
+    currentTenureRemaining = Math.max(0, currentTenureRemaining - 1);
   }
 
   return {
