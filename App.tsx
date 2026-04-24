@@ -184,6 +184,7 @@ const App: React.FC = () => {
               size="sm"
               onClick={toggleDarkMode}
               icon={isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+              title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
               className="text-gray-500 dark:text-davys-gray border-gray-200 dark:border-davys-gray hover:bg-gray-100 dark:hover:bg-davys-gray/10"
             />
             <Button 

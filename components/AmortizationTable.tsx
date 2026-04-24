@@ -15,7 +15,7 @@ export const AmortizationTable: React.FC<AmortizationTableProps> = ({ schedule }
         <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-davys-gray">Amortization Schedule</h3>
         <button 
           onClick={() => setShowDates(!showDates)}
-          className="text-xs font-medium text-primary hover:underline"
+          className="text-sm font-medium text-primary hover:underline"
         >
           {showDates ? 'Show Month #' : 'Show Dates'}
         </button>
