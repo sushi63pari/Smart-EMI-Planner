@@ -24,6 +24,9 @@ export interface LoanInput {
   tenureMonths: number;
   startDate?: string; // ISO date string
   monthlyIncome?: number; // Hypothetical monthly income for EMI stress testing
+  loanType?: string; // Selected loan option type
+  inflationRate?: number; // Annual inflation rate %
+  emiThresholdPct?: number; // Custom threshold percentage for EMI relative to monthly income
 }
 
 export enum EventType {
@@ -62,4 +65,13 @@ export interface CalculationResult {
   totalInterest: number;
   totalPayment: number;
   finalTenure: number; // Actual months taken to close
+}
+
+export interface ComparisonSnapshot {
+  id: string;
+  name: string;
+  inputs: LoanInput;
+  events: LoanEvent[];
+  result: CalculationResult;
+  partPaymentMonthsSaved: number;
 }

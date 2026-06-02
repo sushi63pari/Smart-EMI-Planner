@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { LoanInput, LoanEvent, EventType, PartPaymentStrategy, CURRENCIES, CurrencyConfig } from './types';
+import { LoanInput, LoanEvent, EventType, PartPaymentStrategy, CURRENCIES, CurrencyConfig, ComparisonSnapshot } from './types';
 import { calculateAmortizationSchedule, formatCurrency } from './utils/calculations';
 import { Input } from './components/ui/Input';
 import { Button } from './components/ui/Button';
@@ -9,11 +9,13 @@ import { AmortizationChart } from './components/AmortizationChart';
 import { AmortizationTable } from './components/AmortizationTable';
 import { LoanEligibilityModal } from './components/LoanEligibilityModal';
 import { LoanCompareDashboard } from './components/LoanCompareDashboard';
-import { Calculator, Percent, Calendar, RotateCcw, Printer, Sun, Moon, Download, Loader2, AlertTriangle, Award } from 'lucide-react';
+import { InflationImpact } from './components/InflationImpact';
+import { Calculator, Percent, Calendar, RotateCcw, Printer, Sun, Moon, Download, Loader2, AlertTriangle, Award, GitCompare } from 'lucide-react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TRANSLATIONS, LANGUAGES, AppTranslations } from './utils/translations';
+import { LOAN_TYPES, getLoanTypeLabel, getLoanTypeAvgMessage } from './utils/loanTypes';
 
 // Broad defensive fallback so that if an external evaluator looks up window.translations[anyKey].eventSectionTitle, it NEVER throws undefined!
 if (typeof window !== 'undefined') {
@@ -199,14 +201,131 @@ const getToastStringsByLanguage = (lang: string) => {
   }
 };
 
+const getEMIThresholdStringsByLanguage = (lang: string) => {
+  switch (lang) {
+    case 'hi':
+      return {
+        label: "ईएमआई सीमा प्रतिशत",
+        tooltip: "मासिक आय का अधिकतम प्रतिशत जो ईएमआई भुगतान के रूप में सुरक्षित रूप से आवंटित किया जा सकता है।",
+        warningMsg: "ईएमआई निर्धारित सीमा (%THRESHOLD%%) से अधिक है!",
+        safeMsg: "✓ आपकी ईएमआई निर्धारित %THRESHOLD%% सीमा के भीतर सुरक्षित है।"
+      };
+    case 'ml':
+      return {
+        label: "ഇഎംഐ പരിധി ശതമാനം",
+        tooltip: "പ്രതിമാസ വരുമാനത്തിൽ നിന്നും ഇഎംഐ ആയി സുരക്ഷിതമായി നൽകാവുന്ന പരമാവധി ശതമാനം.",
+        warningMsg: "ഇഎംഐ നിശ്ചയിച്ച പരിധി കഴിഞ്ഞു (%THRESHOLD%%)!",
+        safeMsg: "✓ ഇഎംഐ സുരക്ഷിതമായ %THRESHOLD%% പരിധിക്കുള്ളിലാണ്."
+      };
+    case 'kn':
+      return {
+        label: "ಇಎಂಐ ಮಿತಿ ಶೇಕಡಾವಾರು",
+        tooltip: "ಮಾಸಿಕ ಆದಾಯದ ಗರಿಷ್ಠ ಶೇಕಡಾವಾರು ಮೊತ್ತವನ್ನು ಸುರಕ್ಷಿತವಾಗಿ ಇಎಂಐ ಪಾವತಿಗೆ ಬಳಸಬಹುದು.",
+        warningMsg: "ಇಎಂಐ ನಿಗದಿಪಡಿಸಿದ ಮೀರಿದೆ (%THRESHOLD%%)!",
+        safeMsg: "✓ ನಿಮ್ಮ ಇಎಂಐ ಸುರಕ್ಷಿತ %THRESHOLD%% ಮಿತಿಯೊಳಗಿದೆ."
+      };
+    case 'pa':
+      return {
+        label: "ਈਐਮਆਈ ਸੀਮਾ ਪ੍ਰਤੀਸ਼ਤ",
+        tooltip: "ਕਨਫਿਗਰ ਕਰੋ ਕਿ ਤੁਹਾਡੀ ਮਾਸਿਕ ਆਮਦਨ ਦਾ ਕਿੰਨੇ ਪ੍ਰਤੀਸ਼ਤ ਹਿੱਸਾ ਈਐਮਆਈ ਵਜੋਂ ਭੁਗਤান ਕਰਨਾ ਸੁਰੱਖਿਅਤ ਹੈ।",
+        warningMsg: "ਈਐਮਆਈ ਨਿਰਧਾਰਤ ਸੀਮਾ (%THRESHOLD%%) ਤੋਂ ਵੱਧ ਹੈ!",
+        safeMsg: "✓ ਤੁਹਾਡੀ ਈਐਮਆਈ ਨਿਰਧਾਰਤ %THRESHOLD%% ਸੀਮਾ ਦੇ ਅੰਦਰ ਸੁਰੱਖਿਅਤ ਹੈ।"
+      };
+    case 'ta':
+      return {
+        label: "இஎம்ஐ வரம்பு சதவீதம்",
+        tooltip: "இஎம்ஐ செலுத்தக்கூடிய உங்கள் மாத வருமானத்தின் அதிகபட்ச பாதுகாப்பான சதவீதம்.",
+        warningMsg: "இஎம்ஐ நிர்ணயிக்கப்பட்ட வரம்பை (%THRESHOLD%%) தாண்டியது!",
+        safeMsg: "✓ உங்கள் இஎம்ஐ பாதுகாப்பான %THRESHOLD%% வரம்பிற்குள் உள்ளது."
+      };
+    case 'te':
+      return {
+        label: "ఈఎంఐ గరిష్ట పరిమితి %",
+        tooltip: "నెలవారీ ఆదాయంలో గరిష్ట సేఫ్ ఈఎంఐ శాతం.",
+        warningMsg: "ఈఎంఐ నిర్ణీత పరిమితిని (%THRESHOLD%%) దాటింది!",
+        safeMsg: "✓ ఈఎంఐ నిర్ణీత %THRESHOLD%% సేఫ్ పరిమితిలోనే ఉంది."
+      };
+    case 'bn':
+      return {
+        label: "ইএমআই সীমা শতকরা",
+        tooltip: "মাসিক আয়ের সর্বোচ্চ নিরাপদ শতাংশ যা স্বামী ইএমআই হিসেবে দিতে পারেন।",
+        warningMsg: "ইএমআই নির্ধারিত সীমা (%THRESHOLD%%) অতিক্রম করেছে!",
+        safeMsg: "✓ আপনার ইএমআই নির্ধারিত %THRESHOLD%% সীমার মধ্যে নিরাপদ।"
+      };
+    case 'mr':
+      return {
+        label: "ईएमआय मर्यादा टक्केवारी",
+        tooltip: "मासिक उत्पन्नातील सुरक्षित ईएमआय टक्केवारी मर्यादा.",
+        warningMsg: "ईएमआय ठरवून दिलेल्या मर्यादेपेक्षा (%THRESHOLD%%) जास्त आहे!",
+        safeMsg: "✓ आपली ईएमआय सुरक्षित %THRESHOLD%% मर्यादेत आहे."
+      };
+    case 'fr':
+      return {
+        label: "Seuil d'effort d'échéance (%)",
+        tooltip: "Le pourcentage maximal de votre revenu mensuel allouable de manière stable à votre mensualité.",
+        warningMsg: "La mensualité dépasse le seuil défini (%THRESHOLD%%) !",
+        safeMsg: "✓ Votre mensualité respecte le seuil de sécurité défini de %THRESHOLD%%."
+      };
+    case 'de':
+      return {
+        label: "Max. Tragbarkeitsgrenze (%)",
+        tooltip: "Der maximale Prozentsatz Ihres monatlichen Einkommens, der sicher für Kreditraten verwendet werden darf.",
+        warningMsg: "Die Rate überschreitet das eingestellte Limit (%THRESHOLD%%)!",
+        safeMsg: "✓ Ihre Kreditrate liegt innerhalb der sicheren Grenze von %THRESHOLD%%."
+      };
+    case 'es':
+      return {
+        label: "Límite máximo de EMI (%)",
+        tooltip: "El porcentaje máximo seguro de sus ingresos mensuales asignable a la cuota.",
+        warningMsg: "¡La cuota supera el límite configurado (%THRESHOLD%%)!",
+        safeMsg: "✓ La cuota está dentro del límite de seguridad del %THRESHOLD%%."
+      };
+    default:
+      return {
+        label: "EMI Threshold Percentage (%)",
+        tooltip: "Configure the custom percentage of net monthly income (e.g. 40%) that your EMI should stay within.",
+        warningMsg: "Warning: EMI exceeds your custom threshold percentage (%THRESHOLD%%) of monthly income!",
+        safeMsg: "✓ Your EMI is safely within your custom %THRESHOLD%% threshold of monthly income."
+      };
+  }
+};
+
+const getThemeToggleStringsByLanguage = (lang: string) => {
+  switch (lang) {
+    case 'hi':
+      return { light: "लाइट", dark: "डार्क" };
+    case 'ml':
+      return { light: "ലൈറ്റ്", dark: "ഡാർക്ക്" };
+    case 'kn':
+      return { light: "ಲೈಟ್", dark: "ಡಾರ್ಕ್" };
+    case 'pa':
+      return { light: "ਲਾਈਟ", dark: "ਡਾਰਕ" };
+    case 'ta':
+      return { light: "லைட்", dark: "டார்க்" };
+    case 'te':
+      return { light: "లైట్", dark: "డార్క్" };
+    case 'bn':
+      return { light: "লাইট", dark: "ডার্ক" };
+    case 'mr':
+      return { light: "लाईट", dark: "डार्क" };
+    case 'fr':
+      return { light: "Clair", dark: "Sombre" };
+    default:
+      return { light: "Light", dark: "Dark" };
+  }
+};
+
 const App: React.FC = () => {
   // State
   const [inputs, setInputs] = useState<LoanInput>({
+    loanType: 'home',
     principal: 1000000,
     annualRate: 8.5,
     tenureMonths: 120,
     startDate: new Date().toISOString().split('T')[0],
     monthlyIncome: 100000,
+    inflationRate: 6.0,
+    emiThresholdPct: 40,
   });
 
   const [selectedCurrency, setSelectedCurrency] = useState<CurrencyConfig>(() => {
@@ -229,6 +348,88 @@ const App: React.FC = () => {
   const [isEligibilityModalOpen, setIsEligibilityModalOpen] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [compareMode, setCompareMode] = useState<boolean>(false);
+  const [snapshot, setSnapshot] = useState<ComparisonSnapshot | null>(null);
+
+  const getCompareModeStrings = (lang: string) => {
+    switch (lang) {
+      case 'hi':
+        return {
+          standardMode: "मानक कैलकुलेटर",
+          compareMode: "योजना तुलना मोड",
+          comparingBadge: "तुलना मोड सक्रिय - परिवर्तन वास्तविक समय में प्रतिबिंबित होते हैं"
+        };
+      case 'ml':
+        return {
+          standardMode: "സ്റ്റാൻഡേർഡ് കാൽക്കുലേറ്റർ",
+          compareMode: "പ്ലാൻ താരതമ്യ മോഡ്",
+          comparingBadge: "താരതമ്യ മോഡ് സജീവം - മാറ്റങ്ങൾ തത്സമയം കാണാം"
+        };
+      case 'kn':
+        return {
+          standardMode: "ಸಾಮಾನ್ಯ ಕ್ಯಾಲ್ಕುಲೇಟರ್",
+          compareMode: "ಯೋಜನೆ ಹೋಲಿಕೆ ಮೋಡ್",
+          comparingBadge: "ಹೋಲಿಕೆ ಮೋಡ್ ಸಕ್ರಿಯವಾಗಿದೆ - ಲೈವ್ ಹೋಲಿಕೆ ಲಭ್ಯವಿದೆ"
+        };
+      case 'pa':
+        return {
+          standardMode: "ਸਟੈਂਡਰਡ ਕੈਲਕੁਲੇਟਰ",
+          compareMode: "ਯੋਜਨਾ ਤੁਲਨਾ ਮੋਡ",
+          comparingBadge: "ਤੁਲਨਾ ਮੋਡ ਸਰਗਰਮ - ਬਦਲਾਅ ਲਾਈਵ ਦਿਖਾਈ ਦੇਣਗੇ"
+        };
+      case 'ta':
+        return {
+          standardMode: "நிலையான கால்குலேட்டர்",
+          compareMode: "ஒப்பீட்டு முறை",
+          comparingBadge: "ஒப்பீட்டு முறை செயலில் உள்ளது - மாற்றங்கள் உடனுக்குடன் ஒப்பிடப்படும்"
+        };
+      case 'te':
+        return {
+          standardMode: "సాధారణ కాలిక్యులేటర్",
+          compareMode: "ఈడబ్ల్యూఐ పోలిక మోడ్",
+          comparingBadge: "పోలిక మోడ్ సక్రియంగా ఉంది - మార్పులు లైవ్ అవుతాయి"
+        };
+      case 'bn':
+        return {
+          standardMode: "সাধারণ ক্যালকুলেটর",
+          compareMode: "পরিকল্পনা তুলনা মোড",
+          comparingBadge: "তুলনা মোড সক্রিয় - পরিবর্তন রিয়েল-টাইমে দেখা যাবে"
+        };
+      case 'mr':
+        return {
+          standardMode: "मानक कॅल्क्युलेटर",
+          compareMode: "योजना तुलना मोड",
+          comparingBadge: "तुलना मोड सक्रिय - बदल रिअल-टाईममध्ये दिसतील"
+        };
+      case 'fr':
+        return {
+          standardMode: "Calculateur Standard",
+          compareMode: "Mode Comparateur",
+          comparingBadge: "Mode comparaison actif - Les ajustements comparent en direct"
+        };
+      default:
+        return {
+          standardMode: "Standard Calculator",
+          compareMode: "Compare Scenarios Mode",
+          comparingBadge: "Comparing Scenarios Active — Adjust inputs below to see side-by-side gains/losses!"
+        };
+    }
+  };
+
+  const enableCompareMode = () => {
+    setCompareMode(true);
+    if (!snapshot) {
+      const defaultName = `${t.compareBaselineLabel || "Baseline"} (${formatCurrency(inputs.principal, selectedCurrency.code, selectedCurrency.locale)} @ ${inputs.annualRate}%)`;
+      setSnapshot({
+        id: Math.random().toString(36).substring(2, 9),
+        name: defaultName,
+        inputs: JSON.parse(JSON.stringify(inputs)),
+        events: JSON.parse(JSON.stringify(events)),
+        result: JSON.parse(JSON.stringify(result)),
+        partPaymentMonthsSaved,
+      });
+    }
+  };
   const printRef = useRef<HTMLDivElement>(null);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -263,6 +464,11 @@ const App: React.FC = () => {
   }, [isDarkMode]);
 
   // Derived State (Calculations)
+  const currentLoanTypeConfig = useMemo(() => {
+    const typeId = inputs.loanType || 'home';
+    return LOAN_TYPES.find(t => t.id === typeId) || LOAN_TYPES[0];
+  }, [inputs.loanType]);
+
   const result = useMemo(() => {
     return calculateAmortizationSchedule(inputs, events);
   }, [inputs, events]);
@@ -274,6 +480,24 @@ const App: React.FC = () => {
   }, [inputs, events, result.finalTenure]);
 
   // Handlers
+  const handleLoanTypeChange = (typeId: string) => {
+    const config = LOAN_TYPES.find(t => t.id === typeId);
+    if (config) {
+      setInputs(prev => ({
+        ...prev,
+        loanType: typeId,
+        principal: config.defaultPrincipal,
+        annualRate: config.defaultRate,
+        tenureMonths: config.defaultTenure,
+      }));
+      setErrors({
+        principal: '',
+        annualRate: '',
+        tenureMonths: '',
+      });
+    }
+  };
+
   const handleInputChange = (field: keyof LoanInput, value: string) => {
     const numValue = Number(value);
     let error = '';
@@ -295,6 +519,9 @@ const App: React.FC = () => {
       } else if (field === 'monthlyIncome') {
         if (numValue < 0) error = 'Monthly income cannot be negative';
         if (numValue > 100000000) error = `Income cannot exceed ${selectedCurrency.symbol}10 Cr`;
+      } else if (field === 'emiThresholdPct') {
+        if (numValue < 1) error = 'Threshold percentage must be at least 1%';
+        if (numValue > 100) error = 'Threshold percentage cannot exceed 100%';
       }
     }
 
@@ -370,11 +597,14 @@ const App: React.FC = () => {
 
   const confirmReset = () => {
     setInputs({
+      loanType: 'home',
       principal: 1000000,
       annualRate: 8.5,
       tenureMonths: 120,
       startDate: new Date().toISOString().split('T')[0],
       monthlyIncome: 100000,
+      inflationRate: 6.0,
+      emiThresholdPct: 40,
     });
     setEvents([]);
     setErrors({});
@@ -458,14 +688,54 @@ const App: React.FC = () => {
             <h1 className="text-base sm:text-xl font-bold text-gray-900 dark:text-davys-gray tracking-tight">{t.appTitle}</h1>
           </div>
           <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={toggleDarkMode}
-              icon={isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
-              title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-              className="text-gray-500 dark:text-davys-gray border-gray-200 dark:border-davys-gray hover:bg-gray-100 dark:hover:bg-davys-gray/10"
-            />
+            {/* Elegant Layout-Animated Theme Switch */}
+            {(() => {
+              const themeStrings = getThemeToggleStringsByLanguage(language);
+              return (
+                <div className="flex items-center bg-gray-100 dark:bg-zinc-800/80 p-0.5 rounded-full relative border border-gray-200/50 dark:border-zinc-700/60 transition-colors duration-300">
+                  <button
+                    type="button"
+                    onClick={() => setIsDarkMode(false)}
+                    className={`relative px-2.5 py-1 sm:py-1.5 rounded-full flex items-center gap-1 text-xs font-semibold z-10 select-none cursor-pointer transition-colors duration-200 ${
+                      !isDarkMode ? 'text-primary font-bold' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-zinc-200'
+                    }`}
+                    title={isDarkMode ? "Switch to Light Mode" : "Light Mode Active"}
+                  >
+                    {!isDarkMode && (
+                      <motion.div
+                        layoutId="activeThemeBg"
+                        className="absolute inset-0 bg-white dark:bg-zinc-700 rounded-full shadow-sm"
+                        transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                      />
+                    )}
+                    <span className="relative z-20 flex items-center gap-1">
+                      <Sun size={14} className={!isDarkMode ? "text-amber-500" : "text-gray-400"} />
+                      <span className="hidden sm:inline-block text-[11px]">{themeStrings.light}</span>
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsDarkMode(true)}
+                    className={`relative px-2.5 py-1 sm:py-1.5 rounded-full flex items-center gap-1 text-xs font-semibold z-10 select-none cursor-pointer transition-colors duration-200 ${
+                      isDarkMode ? 'text-primary dark:text-indigo-300 font-bold' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-zinc-200'
+                    }`}
+                    title={!isDarkMode ? "Switch to Dark Mode" : "Dark Mode Active"}
+                  >
+                    {isDarkMode && (
+                      <motion.div
+                        layoutId="activeThemeBg"
+                        className="absolute inset-0 bg-white dark:bg-zinc-700 rounded-full shadow-sm"
+                        transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                      />
+                    )}
+                    <span className="relative z-20 flex items-center gap-1">
+                      <Moon size={14} className={isDarkMode ? "text-indigo-400" : "text-gray-400"} />
+                      <span className="hidden sm:inline-block text-[11px]">{themeStrings.dark}</span>
+                    </span>
+                  </button>
+                </div>
+              );
+            })()}
             <Button 
               onClick={handleExportPDF}
               disabled={isGeneratingPDF}
@@ -479,10 +749,53 @@ const App: React.FC = () => {
       </header>
 
       <main ref={printRef} className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 mt-3 sm:mt-8">
+        
+        {/* View Mode Switcher */}
+        <div className="mb-6 bg-white dark:bg-silver-gray p-1 rounded-xl shadow-sm border border-gray-200/60 dark:border-davys-gray/40 flex items-center justify-between no-print max-w-sm">
+          <div className="flex w-full">
+            <button
+              onClick={() => setCompareMode(false)}
+              className={`flex-1 py-1.5 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-all duration-200 select-none cursor-pointer ${
+                !compareMode 
+                  ? 'bg-slate-100 dark:bg-zinc-800 text-gray-900 dark:text-white shadow-sm' 
+                  : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-zinc-200 bg-transparent'
+              }`}
+            >
+              <Calculator size={14} />
+              <span>{getCompareModeStrings(language).standardMode}</span>
+            </button>
+            <button
+              id="compare-mode-toggle-btn"
+              onClick={enableCompareMode}
+              className={`flex-1 py-1.5 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-all duration-200 select-none cursor-pointer ${
+                compareMode 
+                  ? 'bg-indigo-600 dark:bg-indigo-600 text-white shadow-sm font-extrabold' 
+                  : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-zinc-200 bg-transparent'
+              }`}
+            >
+              <GitCompare size={14} className={compareMode ? "animate-spin text-white" : ""} />
+              <span>{getCompareModeStrings(language).compareMode}</span>
+            </button>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           {/* Left Column: Inputs & Controls */}
           <div className="lg:col-span-4 space-y-6">
+            
+            {compareMode && (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-150 dark:border-indigo-900/30 rounded-xl p-3 text-xs leading-normal font-sans text-indigo-700 dark:text-indigo-400 font-semibold flex gap-2 items-center mb-1 no-print animate-in fade-in"
+              >
+                <div className="bg-indigo-600 text-white rounded p-1 flex-shrink-0 animate-pulse">
+                  <GitCompare size={12} />
+                </div>
+                <span>{getCompareModeStrings(language).comparingBadge}</span>
+              </motion.div>
+            )}
             
             {/* Basic Inputs Card */}
             <div className="bg-white dark:bg-silver-gray rounded-xl shadow-sm border border-gray-100 dark:border-davys-gray p-4 sm:p-6 transition-colors duration-300">
@@ -559,6 +872,30 @@ const App: React.FC = () => {
                 </div>
 
                 <div>
+                  <label className="block text-xs font-semibold text-gray-400 dark:text-silver-gray uppercase tracking-wider mb-2">
+                    Loan Option / Type
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={inputs.loanType || 'home'}
+                      onChange={(e) => handleLoanTypeChange(e.target.value)}
+                      className="w-full bg-white dark:bg-silver-gray border border-gray-200 dark:border-davys-gray rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-davys-gray focus:outline-none focus:ring-2 focus:ring-primary h-10 appearance-none font-semibold cursor-pointer transition-all duration-200"
+                    >
+                      {LOAN_TYPES.map(type => (
+                        <option key={type.id} value={type.id} className="dark:bg-zinc-950 dark:text-white">
+                          {getLoanTypeLabel(type.id, language)}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-500 dark:text-davys-gray">
+                      <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
+                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
                   <Input 
                     label={t.loanAmountLabel} 
                     type="number"
@@ -592,13 +929,19 @@ const App: React.FC = () => {
                   />
                   <input 
                     type="range" 
-                    min="1" 
-                    max="30" 
+                    min={currentLoanTypeConfig.minRate} 
+                    max={currentLoanTypeConfig.maxRate} 
                     step="0.1"
                     value={inputs.annualRate}
                     onChange={(e) => handleInputChange('annualRate', e.target.value)}
                     className="w-full mt-2 h-2 bg-gray-200 dark:bg-davys-gray rounded-lg appearance-none cursor-pointer accent-secondary"
                   />
+                  {/* Dynamic Market Average Hint */}
+                  <div className="mt-1.5 flex items-center gap-1.5 text-[11px] font-medium text-indigo-600 dark:text-indigo-400">
+                    <span className="inline-flex items-center justify-center bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded text-indigo-700 dark:text-indigo-300 border border-indigo-100/50 dark:border-indigo-900/30">
+                      💡 {getLoanTypeAvgMessage(currentLoanTypeConfig.id, language)}
+                    </span>
+                  </div>
                 </div>
 
                 <div>
@@ -664,6 +1007,29 @@ const App: React.FC = () => {
                     onChange={(e) => handleInputChange('monthlyIncome', e.target.value)}
                     className="w-full mt-2 h-2 bg-gray-200 dark:bg-davys-gray rounded-lg appearance-none cursor-pointer accent-indigo-500"
                   />
+
+                  <div className="mt-4 pt-4 border-t border-gray-100 dark:border-davys-gray/50">
+                    <Input 
+                      label={getEMIThresholdStringsByLanguage(language).label} 
+                      type="number"
+                      min="5"
+                      max="100"
+                      icon={<Percent size={16} />}
+                      value={inputs.emiThresholdPct !== undefined ? inputs.emiThresholdPct : 40}
+                      onChange={(e) => handleInputChange('emiThresholdPct', e.target.value)}
+                      tooltip={getEMIThresholdStringsByLanguage(language).tooltip}
+                      error={errors.emiThresholdPct}
+                    />
+                    <input 
+                      type="range" 
+                      min="10" 
+                      max="90" 
+                      step="5"
+                      value={inputs.emiThresholdPct !== undefined ? inputs.emiThresholdPct : 40}
+                      onChange={(e) => handleInputChange('emiThresholdPct', e.target.value)}
+                      className="w-full mt-2 h-2 bg-gray-200 dark:bg-davys-gray rounded-lg appearance-none cursor-pointer accent-orange-550"
+                    />
+                  </div>
                   
                   <div className="mt-3">
                     <Button 
@@ -695,18 +1061,22 @@ const App: React.FC = () => {
 
           {/* Right Column: Visualization & Results */}
           <div className="lg:col-span-8">
-            <LoanCompareDashboard 
-              currentInputs={inputs}
-              currentEvents={events}
-              currentResult={result}
-              currentSavedMonths={partPaymentMonthsSaved}
-              currencySymbol={selectedCurrency.symbol}
-              currencyCode={selectedCurrency.code}
-              currencyLocale={selectedCurrency.locale}
-              onRestoreSnapshot={handleRestoreSnapshot}
-              onSwapSnapshot={handleSwapSnapshot}
-              translations={t}
-            />
+            {compareMode && (
+              <LoanCompareDashboard 
+                currentInputs={inputs}
+                currentEvents={events}
+                currentResult={result}
+                currentSavedMonths={partPaymentMonthsSaved}
+                currencySymbol={selectedCurrency.symbol}
+                currencyCode={selectedCurrency.code}
+                currencyLocale={selectedCurrency.locale}
+                onRestoreSnapshot={handleRestoreSnapshot}
+                onSwapSnapshot={handleSwapSnapshot}
+                translations={t}
+                snapshot={snapshot}
+                onSnapshotChange={setSnapshot}
+              />
+            )}
 
             <SummaryCards 
               monthlyEMI={result.schedule[0]?.emi || 0}
@@ -722,6 +1092,8 @@ const App: React.FC = () => {
               currencyCode={selectedCurrency.code}
               currencyLocale={selectedCurrency.locale}
               translations={t}
+              emiThresholdPct={inputs.emiThresholdPct}
+              language={language}
             />
 
             <AmortizationChart 
@@ -734,11 +1106,27 @@ const App: React.FC = () => {
               translations={t}
             />
 
+            <InflationImpact
+              schedule={result.schedule}
+              principal={inputs.principal}
+              totalInterest={result.totalInterest}
+              totalPayment={result.totalPayment}
+              monthlyEMI={result.schedule[0]?.emi || 0}
+              finalTenure={result.finalTenure}
+              inflationRate={inputs.inflationRate || 6.0}
+              setInflationRate={(rate) => setInputs(prev => ({ ...prev, inflationRate: rate }))}
+              currencySymbol={selectedCurrency.symbol}
+              currencyCode={selectedCurrency.code}
+              currencyLocale={selectedCurrency.locale}
+              language={language}
+            />
+
             <AmortizationTable 
               schedule={result.schedule} 
               currencyCode={selectedCurrency.code}
               currencyLocale={selectedCurrency.locale}
               translations={t}
+              language={language}
             />
           </div>
         </div>

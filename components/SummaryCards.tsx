@@ -18,7 +18,74 @@ interface SummaryCardsProps {
   currencyCode: string;
   currencyLocale: string;
   translations?: AppTranslations;
+  emiThresholdPct?: number;
+  language?: string;
 }
+
+const getEMIThresholdStringsByLanguage = (lang: string) => {
+  switch (lang) {
+    case 'hi':
+      return {
+        warningMsg: "ईएमआई निर्धारित सुरक्षित सीमा (%THRESHOLD%%) से अधिक है!",
+        safeMsg: "✓ आपकी ईएमआई निर्धारित %THRESHOLD%% सीमा के भीतर सुरक्षित है।"
+      };
+    case 'ml':
+      return {
+        warningMsg: "ഇഎംഐ നിശ്ചയിച്ച പരിധി കഴിഞ്ഞു (%THRESHOLD%%)!",
+        safeMsg: "✓ ഇഎംഐ സുരക്ഷിതമായ %THRESHOLD%% പരിധിക്കുള്ളിലാണ്."
+      };
+    case 'kn':
+      return {
+        warningMsg: "ಇಎಂಐ ನಿಗದಿಪಡಿಸಿದ ಮೀರಿದೆ (%THRESHOLD%%)!",
+        safeMsg: "✓ ನಿಮ್ಮ ಇಎಂಐ ಸುರಕ್ಷಿತ %THRESHOLD%% ಮಿತಿಯೊಳಗಿದೆ."
+      };
+    case 'pa':
+      return {
+        warningMsg: "ਈਐਮਆਈ ਨਿਰਧਾਰਤ ਸੀਮਾ (%THRESHOLD%%) ਤੋਂ ਵੱਧ ਹੈ!",
+        safeMsg: "✓ ਤੁਹਾਡੀ ਈਐਮਆਈ ਨਿਰਧਾਰਤ %THRESHOLD%% ਸੀਮਾ ਦੇ ਅੰਦਰ ਸੁਰੱਖਿਅਤ ਹੈ।"
+      };
+    case 'ta':
+      return {
+        warningMsg: "இஎம்ஐ நிர்ணயிக்கப்பட்ட வரம்பை (%THRESHOLD%%) தாண்டியது!",
+        safeMsg: "✓ உங்கள் இஎம்ஐ பாதுகாப்பான %THRESHOLD%% வரம்பிற்குள் உள்ளது."
+      };
+    case 'te':
+      return {
+        warningMsg: "ఈఎంఐ నిర్ణీత పరిమితిని (%THRESHOLD%%) దాటింది!",
+        safeMsg: "✓ ఈఎంఐ నిర్ణీత %THRESHOLD%% సేఫ్ పరిమితిలోనే ఉంది."
+      };
+    case 'bn':
+      return {
+        warningMsg: "ইএমআই নির্ধারিত সীমা (%THRESHOLD%%) অতিক্রম করেছে!",
+        safeMsg: "✓ আপনার ইএমআই নির্ধারিত %THRESHOLD%% সীমার মধ্যে নিরাপদ।"
+      };
+    case 'mr':
+      return {
+        warningMsg: "ईएमआय ठरवून दिलेल्या मर्यादेपेक्षा (%THRESHOLD%%) जास्त आहे!",
+        safeMsg: "✓ आपली ईएमआय सुरक्षित %THRESHOLD%% मर्यादेत आहे."
+      };
+    case 'fr':
+      return {
+        warningMsg: "La mensualité dépasse le seuil défini (%THRESHOLD%%) !",
+        safeMsg: "✓ Votre mensualité respecte le seuil de sécurité défini de %THRESHOLD%%."
+      };
+    case 'de':
+      return {
+        warningMsg: "Die Rate überschreitet das eingestellte Limit (%THRESHOLD%%)!",
+        safeMsg: "✓ Ihre Kreditrate liegt innerhalb der sicheren Grenze von %THRESHOLD%%."
+      };
+    case 'es':
+      return {
+        warningMsg: "¡La cuota supera el límite configurado (%THRESHOLD%%)!",
+        safeMsg: "✓ La cuota está dentro del límite de seguridad del %THRESHOLD%%."
+      };
+    default:
+      return {
+        warningMsg: "Critical stress alert: EMI exceeds %THRESHOLD%% of your net monthly income. This may impact your financial health.",
+        safeMsg: "✓ Your EMI is safely within your %THRESHOLD%% threshold of net monthly income."
+      };
+  }
+};
 
 export const SummaryCards: React.FC<SummaryCardsProps> = ({ 
   totalInterest, 
@@ -33,7 +100,9 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
   currencySymbol,
   currencyCode,
   currencyLocale,
-  translations
+  translations,
+  emiThresholdPct = 40,
+  language = 'en'
 }) => {
   const tenureSaved = originalTenure - finalTenure;
   const principal = Math.max(0, totalPayment - totalInterest);
@@ -42,7 +111,11 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
   const costPerHundred = principal > 0 ? ((totalInterest / principal) * 100).toFixed(0) : '0';
 
   const emiPct = monthlyIncome && monthlyIncome > 0 ? (monthlyEMI / monthlyIncome) * 100 : 0;
-  const emiExceedsLimit = emiPct > 40;
+  const emiExceedsLimit = emiPct > emiThresholdPct;
+
+  const thresholdMsgs = getEMIThresholdStringsByLanguage(language);
+  const customWarningMsg = thresholdMsgs.warningMsg.replace('%THRESHOLD%', String(emiThresholdPct));
+  const customSafeMsg = thresholdMsgs.safeMsg.replace('%THRESHOLD%', String(emiThresholdPct));
 
   const cardVariants = {
     hidden: { opacity: 0, scale: 0.95 },
@@ -92,12 +165,12 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
                   <div className="mt-2 flex items-start gap-1.5 bg-black/20 border border-amber-500/20 rounded p-2 text-[10px] text-amber-100 leading-normal font-sans">
                     <AlertTriangle size={12} className="flex-shrink-0 text-amber-300 mt-0.5" />
                     <span>
-                      {translations?.criticalIncomeMessage || "Critical stress alert: EMI exceeds 40% of your monthly income. This may impact your financial health and loan eligibility."}
+                      {customWarningMsg}
                     </span>
                   </div>
                 ) : (
                   <div className="mt-2 text-[10px] text-green-200 font-medium font-sans">
-                    {translations?.safeIncomeMessage || "✓ Your EMI is within the safe 40% threshold of your income."}
+                    {customSafeMsg}
                   </div>
                 )}
               </div>

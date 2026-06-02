@@ -15,18 +15,9 @@ import {
   HelpCircle
 } from 'lucide-react';
 import { Button } from './ui/Button';
-import { LoanInput, LoanEvent, CalculationResult } from '../types';
+import { LoanInput, LoanEvent, CalculationResult, ComparisonSnapshot } from '../types';
 import { formatCurrency } from '../utils/calculations';
 import { AppTranslations } from '../utils/translations';
-
-interface ComparisonSnapshot {
-  id: string;
-  name: string;
-  inputs: LoanInput;
-  events: LoanEvent[];
-  result: CalculationResult;
-  partPaymentMonthsSaved: number;
-}
 
 interface LoanCompareDashboardProps {
   currentInputs: LoanInput;
@@ -39,6 +30,8 @@ interface LoanCompareDashboardProps {
   onRestoreSnapshot: (inputs: LoanInput, events: LoanEvent[]) => void;
   onSwapSnapshot: (inputs: LoanInput, events: LoanEvent[]) => void;
   translations?: AppTranslations;
+  snapshot?: ComparisonSnapshot | null;
+  onSnapshotChange?: (snapshot: ComparisonSnapshot | null) => void;
 }
 
 export const LoanCompareDashboard: React.FC<LoanCompareDashboardProps> = ({
@@ -52,8 +45,19 @@ export const LoanCompareDashboard: React.FC<LoanCompareDashboardProps> = ({
   onRestoreSnapshot,
   onSwapSnapshot,
   translations,
+  snapshot: propSnapshot,
+  onSnapshotChange,
 }) => {
-  const [snapshot, setSnapshot] = useState<ComparisonSnapshot | null>(null);
+  const [localSnapshot, setLocalSnapshot] = useState<ComparisonSnapshot | null>(null);
+  const snapshot = propSnapshot !== undefined ? propSnapshot : localSnapshot;
+  const setSnapshot = (snap: ComparisonSnapshot | null) => {
+    if (onSnapshotChange) {
+      onSnapshotChange(snap);
+    } else {
+      setLocalSnapshot(snap);
+    }
+  };
+
   const [snapshotName, setSnapshotName] = useState<string>('');
   const [isEditingName, setIsEditingName] = useState<boolean>(false);
   const [showNotification, setShowNotification] = useState<string | null>(null);
