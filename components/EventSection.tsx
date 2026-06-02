@@ -4,6 +4,7 @@ import { LoanEvent, EventType, PartPaymentStrategy } from '../types';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 import { formatCurrency } from '../utils/calculations';
+import { AppTranslations } from '../utils/translations';
 
 interface EventSectionProps {
   events: LoanEvent[];
@@ -13,6 +14,7 @@ interface EventSectionProps {
   currencySymbol: string;
   currencyCode: string;
   currencyLocale: string;
+  translations?: AppTranslations;
 }
 
 export const EventSection: React.FC<EventSectionProps> = ({ 
@@ -22,7 +24,8 @@ export const EventSection: React.FC<EventSectionProps> = ({
   maxMonths,
   currencySymbol,
   currencyCode,
-  currencyLocale
+  currencyLocale,
+  translations,
 }) => {
   const [eventType, setEventType] = useState<EventType>(EventType.PART_PAYMENT);
   const [month, setMonth] = useState<number>(12);
@@ -49,7 +52,7 @@ export const EventSection: React.FC<EventSectionProps> = ({
         <span className="bg-accent/10 dark:bg-amber-900/10 text-accent p-1.5 rounded-lg">
           <Calendar size={18} />
         </span>
-        Advanced Options
+        {translations?.eventSectionTitle || "Advanced Options"}
       </h3>
 
       <div className="space-y-4">

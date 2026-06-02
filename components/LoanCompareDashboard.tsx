@@ -17,6 +17,7 @@ import {
 import { Button } from './ui/Button';
 import { LoanInput, LoanEvent, CalculationResult } from '../types';
 import { formatCurrency } from '../utils/calculations';
+import { AppTranslations } from '../utils/translations';
 
 interface ComparisonSnapshot {
   id: string;
@@ -37,6 +38,7 @@ interface LoanCompareDashboardProps {
   currencyLocale: string;
   onRestoreSnapshot: (inputs: LoanInput, events: LoanEvent[]) => void;
   onSwapSnapshot: (inputs: LoanInput, events: LoanEvent[]) => void;
+  translations?: AppTranslations;
 }
 
 export const LoanCompareDashboard: React.FC<LoanCompareDashboardProps> = ({
@@ -49,6 +51,7 @@ export const LoanCompareDashboard: React.FC<LoanCompareDashboardProps> = ({
   currencyLocale,
   onRestoreSnapshot,
   onSwapSnapshot,
+  translations,
 }) => {
   const [snapshot, setSnapshot] = useState<ComparisonSnapshot | null>(null);
   const [snapshotName, setSnapshotName] = useState<string>('');
@@ -244,7 +247,7 @@ export const LoanCompareDashboard: React.FC<LoanCompareDashboardProps> = ({
           <div className="bg-gradient-to-tr from-indigo-50 to-indigo-100/60 dark:from-zinc-800 dark:to-zinc-800/40 p-3 rounded-full text-primary dark:text-indigo-400 mb-3">
             <GitCompare size={24} className="animate-pulse" />
           </div>
-          <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">Active Scenario Comparator</h2>
+          <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">{translations?.compareTitle || "Active Scenario Comparator"}</h2>
           <p className="max-w-md text-xs text-gray-500 dark:text-silver-gray leading-normal mt-1 mb-5">
             Want to test a different interest rate, pre-payments, or tenure side-by-side? Store your current configuration and easily evaluate differences in real-time.
           </p>
