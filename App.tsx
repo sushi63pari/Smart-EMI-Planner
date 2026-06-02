@@ -7,7 +7,9 @@ import { SummaryCards } from './components/SummaryCards';
 import { EventSection } from './components/EventSection';
 import { AmortizationChart } from './components/AmortizationChart';
 import { AmortizationTable } from './components/AmortizationTable';
-import { Calculator, Percent, Calendar, RotateCcw, Printer, Sun, Moon, Download, Loader2, AlertTriangle } from 'lucide-react';
+import { LoanEligibilityModal } from './components/LoanEligibilityModal';
+import { LoanCompareDashboard } from './components/LoanCompareDashboard';
+import { Calculator, Percent, Calendar, RotateCcw, Printer, Sun, Moon, Download, Loader2, AlertTriangle, Award } from 'lucide-react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -47,6 +49,7 @@ const App: React.FC = () => {
 
   const [events, setEvents] = useState<LoanEvent[]>([]);
   const [errors, setErrors] = useState<{ [key in keyof LoanInput]?: string }>({});
+  const [isEligibilityModalOpen, setIsEligibilityModalOpen] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
@@ -110,6 +113,23 @@ const App: React.FC = () => {
       ...prev,
       [field]: field === 'startDate' ? value : (isNaN(numValue) ? 0 : numValue)
     }));
+  };
+
+  const handleApplyPrincipal = (amount: number) => {
+    setInputs(prev => ({ ...prev, principal: amount }));
+    setErrors(prev => ({ ...prev, principal: '' }));
+  };
+
+  const handleRestoreSnapshot = (snapInputs: LoanInput, snapEvents: LoanEvent[]) => {
+    setInputs(JSON.parse(JSON.stringify(snapInputs)));
+    setEvents(JSON.parse(JSON.stringify(snapEvents)));
+    setErrors({});
+  };
+
+  const handleSwapSnapshot = (snapInputs: LoanInput, snapEvents: LoanEvent[]) => {
+    setInputs(JSON.parse(JSON.stringify(snapInputs)));
+    setEvents(JSON.parse(JSON.stringify(snapEvents)));
+    setErrors({});
   };
 
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
@@ -429,6 +449,18 @@ const App: React.FC = () => {
                     onChange={(e) => handleInputChange('monthlyIncome', e.target.value)}
                     className="w-full mt-2 h-2 bg-gray-200 dark:bg-davys-gray rounded-lg appearance-none cursor-pointer accent-indigo-500"
                   />
+                  
+                  <div className="mt-3">
+                    <Button 
+                      type="button"
+                      variant="outline"
+                      onClick={() => setIsEligibilityModalOpen(true)}
+                      icon={<Award size={14} className="text-emerald-500 dark:text-teal-400" />}
+                      className="w-full text-xs font-semibold py-1.5 h-9 bg-gradient-to-r from-teal-50/40 to-emerald-50/40 dark:from-teal-950/10 dark:to-emerald-950/10 border-teal-200 hover:border-teal-300 dark:border-teal-900/30 dark:hover:border-teal-800 text-teal-850 dark:text-teal-400 hover:bg-teal-50/60 dark:hover:bg-teal-900/5 transition-all rounded-lg shadow-sm"
+                    >
+                      Check Loan Eligibility
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -447,6 +479,18 @@ const App: React.FC = () => {
 
           {/* Right Column: Visualization & Results */}
           <div className="lg:col-span-8">
+            <LoanCompareDashboard 
+              currentInputs={inputs}
+              currentEvents={events}
+              currentResult={result}
+              currentSavedMonths={partPaymentMonthsSaved}
+              currencySymbol={selectedCurrency.symbol}
+              currencyCode={selectedCurrency.code}
+              currencyLocale={selectedCurrency.locale}
+              onRestoreSnapshot={handleRestoreSnapshot}
+              onSwapSnapshot={handleSwapSnapshot}
+            />
+
             <SummaryCards 
               monthlyEMI={result.schedule[0]?.emi || 0}
               totalInterest={result.totalInterest}
@@ -479,6 +523,19 @@ const App: React.FC = () => {
           </div>
         </div>
       </main>
+
+      {/* Loan Eligibility Estimation Modal */}
+      <LoanEligibilityModal
+        isOpen={isEligibilityModalOpen}
+        onClose={() => setIsEligibilityModalOpen(false)}
+        monthlyIncome={inputs.monthlyIncome || 0}
+        annualRate={inputs.annualRate}
+        tenureMonths={inputs.tenureMonths}
+        currencySymbol={selectedCurrency.symbol}
+        currencyCode={selectedCurrency.code}
+        currencyLocale={selectedCurrency.locale}
+        onApplyPrincipal={handleApplyPrincipal}
+      />
 
       {/* Reset Confirmation Modal */}
       {showResetConfirm && (
