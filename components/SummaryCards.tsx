@@ -1,6 +1,6 @@
 import React from 'react';
 import { formatCurrency } from '../utils/calculations';
-import { CalendarClock, Coins, Wallet } from 'lucide-react';
+import { CalendarClock, Coins, Wallet, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface SummaryCardsProps {
@@ -23,6 +23,10 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
   endDate
 }) => {
   const tenureSaved = originalTenure - finalTenure;
+  const principal = Math.max(0, totalPayment - totalInterest);
+  const principalPct = totalPayment > 0 ? (principal / totalPayment * 100).toFixed(1) : '0';
+  const interestPct = totalPayment > 0 ? (totalInterest / totalPayment * 100).toFixed(1) : '0';
+  const costPerHundred = principal > 0 ? ((totalInterest / principal) * 100).toFixed(0) : '0';
 
   const cardVariants = {
     hidden: { opacity: 0, scale: 0.95 },
@@ -71,7 +75,39 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
       >
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-gray-500 dark:text-davys-gray text-[10px] sm:text-sm font-medium mb-1">Total Interest</p>
+            <div className="flex items-center gap-1.5 mb-1 relative">
+              <span className="text-gray-500 dark:text-davys-gray text-[10px] sm:text-sm font-medium">Total Interest</span>
+              <div className="relative group/interest inline-block">
+                <span className="cursor-help text-gray-400 hover:text-orange-500 dark:text-davys-gray/50 dark:hover:text-amber-500 transition-colors">
+                  <Info size={14} />
+                </span>
+                {/* Tooltip Popup */}
+                <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-3 w-64 p-3 bg-gray-900 dark:bg-zinc-900 border border-gray-850 dark:border-zinc-850 rounded-xl shadow-xl opacity-0 scale-95 group-hover/interest:opacity-100 group-hover/interest:scale-100 transition-all duration-200 pointer-events-none z-30 font-sans text-white text-left">
+                  <div className="text-[12px] font-bold text-orange-400 border-b border-gray-800 dark:border-zinc-800 pb-1.5 mb-2 flex items-center gap-1">
+                    <Coins size={12} />
+                    <span>Real cost of your loan</span>
+                  </div>
+                  <div className="space-y-1.5 text-[11px] font-medium text-gray-200">
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Principal Paid:</span>
+                      <span>{formatCurrency(principal)} <span className="text-gray-400 text-[10px]">({principalPct}%)</span></span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Interest Paid:</span>
+                      <span className="text-orange-400">{formatCurrency(totalInterest)} <span className="text-gray-400 text-[10px]">({interestPct}%)</span></span>
+                    </div>
+                    <div className="border-t border-gray-850 dark:border-zinc-800 pt-1.5 mt-1.5 flex justify-between font-bold text-gray-100">
+                      <span>Total Outgoings:</span>
+                      <span>{formatCurrency(totalPayment)}</span>
+                    </div>
+                    <div className="text-[10px] text-gray-400 leading-relaxed pt-1.5 border-t border-gray-850 dark:border-zinc-800">
+                      For every <span className="text-white font-semibold">₹100</span> of principal repaid, you pay supplementary interest of <span className="text-orange-400 font-semibold">₹{costPerHundred}</span>.
+                    </div>
+                  </div>
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-zinc-900"></div>
+                </div>
+              </div>
+            </div>
             <h3 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-davys-gray">{formatCurrency(totalInterest)}</h3>
             <p className="text-[10px] sm:text-xs text-gray-400 dark:text-davys-gray mt-2">
               {(totalInterest / (totalPayment - totalInterest || 1) * 100).toFixed(1)}% of Principal

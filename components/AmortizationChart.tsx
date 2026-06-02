@@ -25,9 +25,11 @@ export const AmortizationChart: React.FC<AmortizationChartProps> = ({ data, prin
     visible: { 
       opacity: 1, 
       y: 0,
-      transition: { duration: 0.5, ease: "easeOut" }
+      transition: { duration: 0.6, ease: "easeOut" }
     }
   };
+
+  const totalPayable = principal + totalInterest;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
@@ -36,7 +38,7 @@ export const AmortizationChart: React.FC<AmortizationChartProps> = ({ data, prin
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        key={`curve-${principal}-${totalInterest}`}
+        layout
         className="bg-white dark:bg-silver-gray p-6 rounded-xl shadow-sm border border-gray-100 dark:border-davys-gray lg:col-span-2 transition-colors duration-300"
       >
         <h3 className="text-lg font-semibold text-gray-800 dark:text-davys-gray mb-6">Amortization Curve</h3>
@@ -85,7 +87,7 @@ export const AmortizationChart: React.FC<AmortizationChartProps> = ({ data, prin
                 fill="url(#colorBalance)" 
                 name="Outstanding Balance"
                 isAnimationActive={true}
-                animationDuration={1000}
+                animationDuration={1500}
                 animationEasing="ease-in-out"
               />
             </AreaChart>
@@ -98,7 +100,7 @@ export const AmortizationChart: React.FC<AmortizationChartProps> = ({ data, prin
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        key={`pie-${principal}-${totalInterest}`}
+        layout
         className="bg-white dark:bg-silver-gray p-6 rounded-xl shadow-sm border border-gray-100 dark:border-davys-gray transition-colors duration-300"
       >
         <h3 className="text-lg font-semibold text-gray-800 dark:text-davys-gray mb-2">Total Breakup</h3>
@@ -115,7 +117,7 @@ export const AmortizationChart: React.FC<AmortizationChartProps> = ({ data, prin
                 paddingAngle={5}
                 dataKey="value"
                 isAnimationActive={true}
-                animationDuration={1000}
+                animationDuration={1500}
                 animationEasing="ease-in-out"
               >
                 {pieData.map((entry, index) => (
@@ -139,9 +141,18 @@ export const AmortizationChart: React.FC<AmortizationChartProps> = ({ data, prin
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none pb-8">
             <div className="text-center">
               <span className="text-xs text-gray-500 dark:text-davys-gray block">Total Payable</span>
-              <span className="text-sm font-bold text-gray-800 dark:text-davys-gray">
-                ₹{((principal + totalInterest)/1000).toFixed(1)}k
-              </span>
+              <AnimatePresence mode="wait">
+                <motion.span 
+                  key={totalPayable}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ duration: 0.3 }}
+                  className="text-sm font-bold text-gray-800 dark:text-davys-gray block"
+                >
+                  ₹{(totalPayable/1000).toFixed(1)}k
+                </motion.span>
+              </AnimatePresence>
             </div>
           </div>
         </div>
@@ -152,7 +163,7 @@ export const AmortizationChart: React.FC<AmortizationChartProps> = ({ data, prin
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        key={`bar-${principal}-${totalInterest}`}
+        layout
         className="bg-white dark:bg-silver-gray p-6 rounded-xl shadow-sm border border-gray-100 dark:border-davys-gray lg:col-span-3 transition-colors duration-300"
       >
         <h3 className="text-lg font-semibold text-gray-800 dark:text-davys-gray mb-6">Principal vs Interest Component</h3>
@@ -184,7 +195,7 @@ export const AmortizationChart: React.FC<AmortizationChartProps> = ({ data, prin
                 name="Principal" 
                 radius={[0, 0, 4, 4]} 
                 isAnimationActive={true}
-                animationDuration={1000}
+                animationDuration={1500}
                 animationEasing="ease-in-out"
               />
               <Bar 
@@ -194,7 +205,7 @@ export const AmortizationChart: React.FC<AmortizationChartProps> = ({ data, prin
                 name="Interest" 
                 radius={[4, 4, 0, 0]} 
                 isAnimationActive={true}
-                animationDuration={1000}
+                animationDuration={1500}
                 animationEasing="ease-in-out"
               />
             </BarChart>

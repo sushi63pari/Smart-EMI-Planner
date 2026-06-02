@@ -35,7 +35,7 @@ export const Input: React.FC<InputProps> = ({ label, icon, suffix, error, toolti
         )}
         <input
           {...props}
-          className={`block w-full rounded-lg border-0 py-2.5 sm:py-3 text-sm text-gray-900 dark:text-davys-gray bg-white dark:bg-davys-gray/5 ring-1 ring-inset ring-gray-400 dark:ring-davys-gray placeholder:text-gray-500 dark:placeholder:text-davys-gray/50 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6 ${icon ? 'pl-10' : 'pl-4'} ${suffix ? 'pr-12' : 'pr-4'} transition-all shadow-sm`}
+          className={`block w-full rounded-lg border-0 py-2.5 sm:py-3 text-sm text-gray-900 dark:text-davys-gray bg-white dark:bg-davys-gray/10 ring-2 ring-inset ring-gray-200 dark:ring-davys-gray/30 placeholder:text-gray-500 dark:placeholder:text-davys-gray/50 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6 ${icon ? 'pl-10' : 'pl-4'} ${suffix ? 'pr-12' : 'pr-4'} transition-all shadow-md focus:shadow-lg`}
         />
         {suffix && (
           <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">

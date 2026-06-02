@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { LoanInput, LoanEvent } from './types';
-import { calculateAmortizationSchedule } from './utils/calculations';
+import { LoanInput, LoanEvent, EventType, PartPaymentStrategy } from './types';
+import { calculateAmortizationSchedule, formatCurrency } from './utils/calculations';
 import { Input } from './components/ui/Input';
 import { Button } from './components/ui/Button';
 import { SummaryCards } from './components/SummaryCards';
@@ -10,6 +10,15 @@ import { AmortizationTable } from './components/AmortizationTable';
 import { Calculator, IndianRupee, Percent, Calendar, RotateCcw, Printer, Sun, Moon, Download, Loader2, AlertTriangle } from 'lucide-react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { motion, AnimatePresence } from 'framer-motion';
+
+interface ToastMessage {
+  id: string;
+  amount: number;
+  monthsSaved: number;
+  strategy?: PartPaymentStrategy;
+  month: number;
+}
 
 const App: React.FC = () => {
   // State
@@ -78,7 +87,40 @@ const App: React.FC = () => {
     }));
   };
 
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  const addToast = (toast: ToastMessage) => {
+    setToasts(prev => [...prev, toast]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== toast.id));
+    }, 6000);
+  };
+
+  const removeToast = (id: string) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  };
+
   const handleAddEvent = (event: LoanEvent) => {
+    if (event.type === EventType.PART_PAYMENT) {
+      // Calculate schedule without the new event
+      const resultBefore = calculateAmortizationSchedule(inputs, events);
+      const tenureBefore = resultBefore.finalTenure;
+
+      // Calculate schedule with the new event
+      const resultAfter = calculateAmortizationSchedule(inputs, [...events, event]);
+      const tenureAfter = resultAfter.finalTenure;
+
+      const monthsSaved = Math.max(0, tenureBefore - tenureAfter);
+
+      addToast({
+        id: Math.random().toString(36).substring(2, 9),
+        amount: event.value,
+        monthsSaved,
+        strategy: event.strategy,
+        month: event.month
+      });
+    }
+
     setEvents(prev => [...prev, event]);
   };
 
@@ -374,6 +416,57 @@ const App: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Toast Notification Container */}
+      <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-3 max-w-sm w-full font-sans pointer-events-none px-4 sm:px-0 no-print">
+        <AnimatePresence>
+          {toasts.map(toast => (
+            <motion.div
+              key={toast.id}
+              initial={{ opacity: 0, y: 50, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.85, transition: { duration: 0.2 } }}
+              className="bg-white dark:bg-silver-gray text-gray-900 dark:text-davys-gray pointer-events-auto rounded-xl p-4 shadow-lg border border-gray-100 dark:border-davys-gray/40 flex gap-3 items-start ring-1 ring-black/5"
+            >
+              {/* Icon */}
+              <div className="bg-green-500/10 text-green-600 dark:text-green-500 p-2 rounded-lg flex-shrink-0 animate-pulse">
+                <IndianRupee size={18} />
+              </div>
+
+              {/* Toast details */}
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sm text-gray-900 dark:text-white">
+                  Part Payment Added!
+                </p>
+                <p className="text-xs text-gray-500 dark:text-davys-gray mt-0.5">
+                  Month {toast.month}: {formatCurrency(toast.amount)} payment applied.
+                </p>
+                
+                {toast.monthsSaved > 0 ? (
+                  <div className="flex items-center gap-1.5 mt-2 bg-green-500/10 text-green-600 dark:text-green-400 font-medium text-xs px-2 py-1 rounded-md w-fit">
+                    <span>🎉 Saved {toast.monthsSaved} {toast.monthsSaved === 1 ? 'month' : 'months'} of tenure!</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1.5 mt-2 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-medium text-xs px-2 py-1 rounded-md w-fit font-sans">
+                    <span>📉 EMI reduced! Tenure unchanged.</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Dismiss button */}
+              <button 
+                onClick={() => removeToast(toast.id)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                id={`dismiss-toast-${toast.id}`}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
     </div>
   );
 };
