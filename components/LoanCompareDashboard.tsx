@@ -59,8 +59,7 @@ export const LoanCompareDashboard: React.FC<LoanCompareDashboardProps> = ({
   const [showNotification, setShowNotification] = useState<string | null>(null);
 
   const captureSnapshot = () => {
-    const formattedDate = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const defaultName = `Scenario A (${formatCurrency(currentInputs.principal, currencyCode, currencyLocale)} @ ${currentInputs.annualRate}%)`;
+    const defaultName = `${translations?.compareBaselineLabel || "Baseline"} (${formatCurrency(currentInputs.principal, currencyCode, currencyLocale)} @ ${currentInputs.annualRate}%)`;
     
     setSnapshot({
       id: Math.random().toString(36).substring(2, 9),
@@ -72,7 +71,7 @@ export const LoanCompareDashboard: React.FC<LoanCompareDashboardProps> = ({
     });
     setSnapshotName(defaultName);
     setIsEditingName(false);
-    triggerNotification('Snapshot saved! Tweak current inputs to compare side-by-side.');
+    triggerNotification(translations?.compareToastSaved || 'Snapshot saved! Tweak current inputs to compare side-by-side.');
   };
 
   const triggerNotification = (message: string) => {
@@ -89,14 +88,14 @@ export const LoanCompareDashboard: React.FC<LoanCompareDashboardProps> = ({
         name: snapshotName.trim()
       });
       setIsEditingName(false);
-      triggerNotification('Snapshot name updated!');
+      triggerNotification(translations?.compareToastNameUpdated || 'Snapshot name updated!');
     }
   };
 
   const clearSnapshot = () => {
     setSnapshot(null);
     setIsEditingName(false);
-    triggerNotification('Snapshot cleared.');
+    triggerNotification(translations?.compareToastCleared || 'Snapshot cleared.');
   };
 
   const overwriteSnapshot = () => {
@@ -107,7 +106,7 @@ export const LoanCompareDashboard: React.FC<LoanCompareDashboardProps> = ({
   const handleRestore = () => {
     if (!snapshot) return;
     onRestoreSnapshot(snapshot.inputs, snapshot.events);
-    triggerNotification('Restored to saved snapshot inputs.');
+    triggerNotification(translations?.compareToastRestored || 'Restored to saved snapshot inputs.');
   };
 
   const handleSwap = () => {
@@ -123,7 +122,7 @@ export const LoanCompareDashboard: React.FC<LoanCompareDashboardProps> = ({
       partPaymentMonthsSaved: currentSavedMonths,
     });
     setSnapshotName(snapshot.name);
-    triggerNotification('Swapped active inputs with snapshot.');
+    triggerNotification(translations?.compareToastSwapped || 'Swapped active inputs with snapshot.');
   };
 
   const formatDelta = (activeVal: number, snapVal: number, formatType: 'currency' | 'percent' | 'months') => {
@@ -173,51 +172,51 @@ export const LoanCompareDashboard: React.FC<LoanCompareDashboardProps> = ({
 
   const compareMetrics = snapshot ? [
     {
-      label: 'Loan Principal',
+      label: translations?.loanAmountLabel || 'Loan Principal',
       snapshotStr: formatCurrency(snapInputs?.principal || 0, currencyCode, currencyLocale),
       activeStr: formatCurrency(currentInputs.principal, currencyCode, currencyLocale),
       delta: formatDelta(currentInputs.principal, snapInputs?.principal || 0, 'currency')
     },
     {
-      label: 'Interest Rate P.A.',
+      label: translations?.interestRateLabel || 'Interest Rate P.A.',
       snapshotStr: `${snapInputs?.annualRate || 0}%`,
       activeStr: `${currentInputs.annualRate}%`,
       delta: formatDelta(currentInputs.annualRate, snapInputs?.annualRate || 0, 'percent')
     },
     {
-      label: 'Target Tenure',
-      snapshotStr: `${snapInputs?.tenureMonths || 0} months`,
-      activeStr: `${currentInputs.tenureMonths} months`,
+      label: translations?.tenureMonthsLabel || 'Target Tenure',
+      snapshotStr: `${snapInputs?.tenureMonths || 0} ${translations?.monthsLabel ? translations.monthsLabel.toLowerCase() : "months" }`,
+      activeStr: `${currentInputs.tenureMonths} ${translations?.monthsLabel ? translations.monthsLabel.toLowerCase() : "months" }`,
       delta: formatDelta(currentInputs.tenureMonths, snapInputs?.tenureMonths || 0, 'months')
     },
     {
-      label: 'Initial Monthly EMI',
+      label: translations?.currentEMILabel || 'Initial Monthly EMI',
       snapshotStr: formatCurrency(snapResult?.schedule[0]?.emi || 0, currencyCode, currencyLocale),
       activeStr: formatCurrency(currentResult.schedule[0]?.emi || 0, currencyCode, currencyLocale),
       delta: formatDelta(currentResult.schedule[0]?.emi || 0, snapResult?.schedule[0]?.emi || 0, 'currency')
     },
     {
-      label: 'Actual Tenure (with payments)',
-      snapshotStr: `${snapResult?.finalTenure || 0} months`,
-      activeStr: `${currentResult.finalTenure} months`,
+      label: translations?.durationLabel || 'Actual Tenure (with payments)',
+      snapshotStr: `${snapResult?.finalTenure || 0} ${translations?.monthsLabel ? translations.monthsLabel.toLowerCase() : "months" }`,
+      activeStr: `${currentResult.finalTenure} ${translations?.monthsLabel ? translations.monthsLabel.toLowerCase() : "months" }`,
       delta: formatDelta(currentResult.finalTenure, snapResult?.finalTenure || 0, 'months')
     },
     {
-      label: 'Total Interest Paid',
+      label: translations?.totalInterestLabel || 'Total Interest Paid',
       snapshotStr: formatCurrency(snapResult?.totalInterest || 0, currencyCode, currencyLocale),
       activeStr: formatCurrency(currentResult.totalInterest, currencyCode, currencyLocale),
       delta: formatDelta(currentResult.totalInterest, snapResult?.totalInterest || 0, 'currency')
     },
     {
-      label: 'Total Outgoings',
+      label: translations?.totalOutgoingsLabel || 'Total Outgoings',
       snapshotStr: formatCurrency(snapResult?.totalPayment || 0, currencyCode, currencyLocale),
       activeStr: formatCurrency(currentResult.totalPayment, currencyCode, currencyLocale),
       delta: formatDelta(currentResult.totalPayment, snapResult?.totalPayment || 0, 'currency')
     },
     {
-      label: 'Prepay Tenure Saved',
-      snapshotStr: `${snapshot.partPaymentMonthsSaved} months`,
-      activeStr: `${currentSavedMonths} months`,
+      label: translations?.netTenureSavedLabel || 'Prepay Tenure Saved',
+      snapshotStr: `${snapshot.partPaymentMonthsSaved} ${translations?.monthsLabel ? translations.monthsLabel.toLowerCase() : "months" }`,
+      activeStr: `${currentSavedMonths} ${translations?.monthsLabel ? translations.monthsLabel.toLowerCase() : "months" }`,
       // For months saved, HIGHER is better, so swap the arguments to delta calculation
       delta: formatDelta(snapshot.partPaymentMonthsSaved, currentSavedMonths, 'months') // This shows delta
     }
@@ -249,7 +248,7 @@ export const LoanCompareDashboard: React.FC<LoanCompareDashboardProps> = ({
           </div>
           <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">{translations?.compareTitle || "Active Scenario Comparator"}</h2>
           <p className="max-w-md text-xs text-gray-500 dark:text-silver-gray leading-normal mt-1 mb-5">
-            Want to test a different interest rate, pre-payments, or tenure side-by-side? Store your current configuration and easily evaluate differences in real-time.
+            {translations?.compareSubtitle || "Want to test a different interest rate, pre-payments, or tenure side-by-side? Store your current configuration and easily evaluate differences in real-time."}
           </p>
           <Button
             onClick={captureSnapshot}
@@ -257,7 +256,7 @@ export const LoanCompareDashboard: React.FC<LoanCompareDashboardProps> = ({
             icon={<Save size={14} className="text-primary dark:text-indigo-400" />}
             className="font-bold text-xs h-9 text-primary border-primary/20 hover:bg-indigo-50/50 dark:border-indigo-400/20"
           >
-            Snap Current as Baseline Case
+            {translations?.onboardingBaselineBtn || "Snap Current as Baseline Case"}
           </Button>
         </div>
       ) : (
@@ -268,9 +267,9 @@ export const LoanCompareDashboard: React.FC<LoanCompareDashboardProps> = ({
             <div className="flex-1">
               <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-primary dark:text-indigo-400 uppercase tracking-widest bg-indigo-50 dark:bg-zinc-855 px-2 py-0.5 rounded-full mb-1">
                 <Sparkles size={10} />
-                Comparison Engine Active
+                {translations?.monthText ? (translations.appTitle === "स्मार्ट ईएमआई प्लानर" ? "तुलना सक्रिय" : "Comparison Engine Active") : "Comparison Engine Active"}
               </span>
-
+              
               {isEditingName ? (
                 <div className="flex items-center gap-2 mt-1">
                   <input
@@ -283,16 +282,16 @@ export const LoanCompareDashboard: React.FC<LoanCompareDashboardProps> = ({
                     }}
                   />
                   <Button size="sm" variant="secondary" className="h-8 font-bold" onClick={handleUpdateName}>
-                    Rename
+                    {translations?.monthText ? (translations.appTitle === "स्मार्ट ईएमआई प्लानर" ? "नाम बदलें" : "Rename") : "Rename"}
                   </Button>
                   <Button size="sm" variant="outline" className="h-8 font-bold" onClick={() => setIsEditingName(false)}>
-                    Cancel
+                    {translations?.resetConfirmCancel || "Cancel"}
                   </Button>
                 </div>
               ) : (
                 <div className="flex items-center gap-2 mt-0.5">
                   <h3 className="text-sm font-bold text-gray-900 dark:text-white">
-                    Baseline: <span className="text-indigo-600 dark:text-indigo-400 underline decoration-indigo-400/40 decoration-dashed underline-offset-4 cursor-pointer" onClick={() => { setSnapshotName(snapshot.name); setIsEditingName(true); }}>{snapshot.name}</span>
+                    {translations?.compareBaselineLabel || "Baseline:"} <span className="text-indigo-600 dark:text-indigo-400 underline decoration-indigo-400/40 decoration-dashed underline-offset-4 cursor-pointer" onClick={() => { setSnapshotName(snapshot.name); setIsEditingName(true); }}>{snapshot.name}</span>
                   </h3>
                 </div>
               )}
@@ -308,7 +307,7 @@ export const LoanCompareDashboard: React.FC<LoanCompareDashboardProps> = ({
                 title="Swaps active configuration and saved snapshot setup side-by-side"
                 className="text-[11px] font-bold h-8 flex-1 sm:flex-initial"
               >
-                Swap Plans
+                {translations?.compareBtnSwap || "Swap Plans"}
               </Button>
               <Button 
                 variant="outline" 
@@ -318,7 +317,7 @@ export const LoanCompareDashboard: React.FC<LoanCompareDashboardProps> = ({
                 title="Restore all loan values back to this saved baseline snapshot"
                 className="text-[11px] font-bold h-8 flex-1 sm:flex-initial"
               >
-                Restore
+                {translations?.compareBtnRestore || "Restore"}
               </Button>
               <Button 
                 variant="outline" 
@@ -328,7 +327,7 @@ export const LoanCompareDashboard: React.FC<LoanCompareDashboardProps> = ({
                 title="Overwrite the saved snapshot with current configurations"
                 className="text-[11px] font-bold h-8 flex-1 sm:flex-initial text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/20"
               >
-                Overwrite
+                {translations?.compareBtnOverwrite || "Overwrite"}
               </Button>
               <Button 
                 variant="outline" 
@@ -338,7 +337,7 @@ export const LoanCompareDashboard: React.FC<LoanCompareDashboardProps> = ({
                 title="Clear snapshot"
                 className="text-[11px] font-bold h-8 py-0 bg-transparent text-red-500 hover:text-red-600 border-red-100 dark:border-red-950/20"
               >
-                Clear
+                {translations?.compareBtnClear || "Clear"}
               </Button>
             </div>
           </div>
@@ -353,13 +352,17 @@ export const LoanCompareDashboard: React.FC<LoanCompareDashboardProps> = ({
             let sentence = '';
             if (outgoingsDiff < -1) {
               alertStyle = 'bg-emerald-50 dark:bg-emerald-950/15 border-emerald-150 dark:border-emerald-900/30 text-emerald-800 dark:text-emerald-350';
-              sentence = `✓ This active scenario is overall CHEAPER! You save ${formatCurrency(Math.abs(outgoingsDiff), currencyCode, currencyLocale)} in total cost, reduces interest by ${formatCurrency(Math.abs(interestDiff), currencyCode, currencyLocale)}, and closes your loan ${timeDiff < 0 ? `${Math.abs(timeDiff)} months faster` : 'at the same time'}.`;
+              sentence = translations?.compareOutcomeCheaper 
+                ? `${translations.compareOutcomeCheaper} ${formatCurrency(Math.abs(outgoingsDiff), currencyCode, currencyLocale)}`
+                : `✓ This active scenario is overall CHEAPER! You save ${formatCurrency(Math.abs(outgoingsDiff), currencyCode, currencyLocale)} in total cost, reduces interest by ${formatCurrency(Math.abs(interestDiff), currencyCode, currencyLocale)}, and closes your loan ${timeDiff < 0 ? `${Math.abs(timeDiff)} months faster` : 'at the same time'}.`;
             } else if (outgoingsDiff > 1) {
               alertStyle = 'bg-red-50 dark:bg-red-950/15 border-red-150 dark:border-red-900/30 text-red-800 dark:text-red-350';
-              sentence = `⚠ Active scenario is MORE EXPENSIVE. Adding this configuration results in ${formatCurrency(Math.abs(outgoingsDiff), currencyCode, currencyLocale)} extra cost (+${formatCurrency(Math.abs(interestDiff), currencyCode, currencyLocale)} supplementary interest) compared to the saved Plan.`;
+              sentence = translations?.compareOutcomeExpensive 
+                ? `${translations.compareOutcomeExpensive} ${formatCurrency(Math.abs(outgoingsDiff), currencyCode, currencyLocale)}`
+                : `⚠ Active scenario is MORE EXPENSIVE. Adding this configuration results in ${formatCurrency(Math.abs(outgoingsDiff), currencyCode, currencyLocale)} extra cost (+${formatCurrency(Math.abs(interestDiff), currencyCode, currencyLocale)} supplementary interest) compared to the saved Plan.`;
             } else {
               alertStyle = 'bg-gray-50 dark:bg-zinc-800/60 border-gray-150 dark:border-zinc-700 text-gray-800 dark:text-silver-gray';
-              sentence = `The current active scenario matches the saved snapshot baseline perfectly. Adjust any parameters on the left to see instant comparative deltas!`;
+              sentence = translations?.compareOutcomeEqual || `The current active scenario matches the saved snapshot baseline perfectly. Adjust any parameters on the left to see instant comparative deltas!`;
             }
 
             return (
@@ -375,10 +378,10 @@ export const LoanCompareDashboard: React.FC<LoanCompareDashboardProps> = ({
             <table className="w-full text-left border-collapse font-sans text-xs sm:text-sm">
               <thead>
                 <tr className="bg-gray-50 dark:bg-smoke-gray/45 border-b border-gray-150 dark:border-davys-gray/40 text-gray-500 dark:text-silver-gray font-bold text-[10px] sm:text-xs uppercase tracking-wider">
-                  <th className="px-3 sm:px-4 py-2.5">Evaluation Metric</th>
-                  <th className="px-3 sm:px-4 py-2.5 text-right font-bold text-indigo-600 dark:text-indigo-400">Saved Snapshot</th>
-                  <th className="px-3 sm:px-4 py-2.5 text-right font-bold text-gray-900 dark:text-white">Active Scenario</th>
-                  <th className="px-3 sm:px-4 py-2.5 text-right">Instant Gain / Loss Delta</th>
+                  <th className="px-3 sm:px-4 py-2.5">{translations?.compareTableMetric || "Evaluation Metric"}</th>
+                  <th className="px-3 sm:px-4 py-2.5 text-right font-bold text-indigo-600 dark:text-indigo-400">{translations?.compareTableSaved || "Saved Snapshot"}</th>
+                  <th className="px-3 sm:px-4 py-2.5 text-right font-bold text-gray-900 dark:text-white">{translations?.compareTableActive || "Active Scenario"}</th>
+                  <th className="px-3 sm:px-4 py-2.5 text-right">{translations?.compareTableDelta || "Instant Gain / Loss Delta"}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-150 dark:divide-davys-gray/40">

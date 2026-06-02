@@ -4,6 +4,7 @@ import { X, HelpCircle, Check, Award, ShieldAlert, Sparkles, Sliders } from 'luc
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 import { formatCurrency } from '../utils/calculations';
+import { AppTranslations } from '../utils/translations';
 
 interface LoanEligibilityModalProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ interface LoanEligibilityModalProps {
   currencyCode: string;
   currencyLocale: string;
   onApplyPrincipal: (amount: number) => void;
+  translations?: AppTranslations;
 }
 
 export const LoanEligibilityModal: React.FC<LoanEligibilityModalProps> = ({
@@ -27,6 +29,7 @@ export const LoanEligibilityModal: React.FC<LoanEligibilityModalProps> = ({
   currencyCode,
   currencyLocale,
   onApplyPrincipal,
+  translations,
 }) => {
   const [modalIncome, setModalIncome] = useState<number>(initialMonthlyIncome || 100000);
   const [multiplier, setMultiplier] = useState<number>(75);
@@ -82,16 +85,16 @@ export const LoanEligibilityModal: React.FC<LoanEligibilityModalProps> = ({
               <div>
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                   <Award className="text-secondary" size={24} />
-                  Loan Eligibility Estimator
+                  {translations?.eligibilityHeader || "Loan Eligibility Estimator"}
                 </h3>
                 <p className="text-xs text-gray-400 mt-1">
-                  Adjust parameters to view your borrowing potential based on net income metrics.
+                  {translations?.eligibilitySubtitle || "Adjust parameters to view your borrowing potential based on net income metrics."}
                 </p>
               </div>
               <button
                 onClick={onClose}
                 className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-1 bg-gray-50 dark:bg-davys-gray/20 rounded-full"
-                aria-label="Close"
+                aria-label={translations?.closeLabel || "Close"}
               >
                 <X size={18} />
               </button>
@@ -102,7 +105,7 @@ export const LoanEligibilityModal: React.FC<LoanEligibilityModalProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
                 <div>
                   <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                    Net Monthly Income
+                    {translations?.netMonthlyIncomeLabel || "Net Monthly Income"}
                   </h4>
                   <div className="relative">
                     <input
@@ -121,7 +124,7 @@ export const LoanEligibilityModal: React.FC<LoanEligibilityModalProps> = ({
                 </div>
                 <div>
                   <label className="block text-[11px] text-gray-500 dark:text-silver-gray mb-1 flex justify-between">
-                    <span>Tweak Income Fast</span>
+                    <span>{translations?.tweakIncomeLabel || "Tweak Income Fast"}</span>
                     <span className="font-bold text-primary">{formatCurrency(modalIncome, currencyCode, currencyLocale)}</span>
                   </label>
                   <input
@@ -146,22 +149,22 @@ export const LoanEligibilityModal: React.FC<LoanEligibilityModalProps> = ({
                   <div className="flex items-center justify-between mb-3 border-b border-gray-50 dark:border-davys-gray/20 pb-2">
                     <span className="text-[11px] font-bold text-secondary dark:text-teal-400 uppercase tracking-widest flex items-center gap-1.5">
                       <Sparkles size={12} />
-                      Multiplier Rule
+                      {translations?.multiplierRuleLabel || "Multiplier Rule"}
                     </span>
-                    <span className="text-xs font-semibold text-gray-400">Rule of Thumb</span>
+                    <span className="text-xs font-semibold text-gray-400">{translations?.ruleOfThumbLabel || "Rule of Thumb"}</span>
                   </div>
                   
                   <p className="text-xs text-gray-500 dark:text-davys-gray mb-4 leading-normal">
-                    Banks often approve home/personal loans equal to a fixed multiple (e.g. <strong>60x to 75x</strong>) of your stable net salary.
+                    {translations?.multiplierExplanation || "Banks often approve home/personal loans equal to a fixed multiple (60x to 75x) of your stable net salary."}
                   </p>
 
                   <div className="space-y-3 mb-4">
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-gray-400 flex items-center gap-1">
-                        <Sliders size={12} /> Multiplier Limit:
+                        <Sliders size={12} /> {translations?.multiplierLimitLabel || "Multiplier Limit:"}
                       </span>
                       <span className="font-bold text-gray-900 dark:text-white bg-slate-100 dark:bg-davys-gray px-2 py-0.5 rounded">
-                        {multiplier}x Net Income
+                        {multiplier}x {translations?.netMonthlyIncomeLabel || "Net Income"}
                       </span>
                     </div>
                     <input
@@ -177,7 +180,7 @@ export const LoanEligibilityModal: React.FC<LoanEligibilityModalProps> = ({
                 </div>
 
                 <div className="pt-4 border-t border-gray-100 dark:border-davys-gray/40">
-                  <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Eligible Loan Amount</div>
+                  <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">{translations?.checkEligibilityBtn || "Eligible Loan Amount"}</div>
                   <div className="text-2xl font-black text-secondary tracking-tight">
                     {formatCurrency(calculatedByMultiplier, currencyCode, currencyLocale)}
                   </div>
@@ -187,7 +190,7 @@ export const LoanEligibilityModal: React.FC<LoanEligibilityModalProps> = ({
                     className="w-full mt-4 font-bold text-xs rounded-lg h-9"
                     onClick={() => handleApply(calculatedByMultiplier)}
                   >
-                    Use Multiplier Plan
+                    {translations?.usableMultiplierPlanBtn || "Use Multiplier Plan"}
                   </Button>
                 </div>
               </div>
@@ -198,22 +201,22 @@ export const LoanEligibilityModal: React.FC<LoanEligibilityModalProps> = ({
                   <div className="flex items-center justify-between mb-3 border-b border-gray-50 dark:border-davys-gray/20 pb-2">
                     <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest flex items-center gap-1.5">
                       <ShieldAlert size={12} />
-                      FOIR / EMI Model
+                      {translations?.foirModelLabel || "FOIR / EMI Model"}
                     </span>
-                    <span className="text-xs font-semibold text-gray-400">Strict Capacity</span>
+                    <span className="text-xs font-semibold text-gray-400">{translations?.strictCapacityLabel || "Strict Capacity"}</span>
                   </div>
 
                   <p className="text-xs text-gray-500 dark:text-davys-gray mb-4 leading-normal">
-                    Limits your maximum monthly EMI instalment to a safe percentage (e.g. <strong>40% to 50%</strong>) of your stable income.
+                    {translations?.foirExplanation || "Limits your maximum monthly EMI instalment to a safe percentage (e.g. 40% to 50%) of your stable income."}
                   </p>
 
                   <div className="space-y-3 mb-4">
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-gray-400 flex items-center gap-1">
-                        <Sliders size={12} /> Max EMI % Cap:
+                        <Sliders size={12} /> {translations?.maxEmiCapLabel || "Max EMI % Cap:"}
                       </span>
                       <span className="font-bold text-gray-900 dark:text-white bg-slate-100 dark:bg-davys-gray px-2 py-0.5 rounded">
-                        {foirPct}% (Max EMI: {formatCurrency((modalIncome * foirPct) / 100, currencyCode, currencyLocale)})
+                        {foirPct}% ({translations?.currentEMILabel || "Max EMI"}: {formatCurrency((modalIncome * foirPct) / 100, currencyCode, currencyLocale)})
                       </span>
                     </div>
                     <input
@@ -230,7 +233,7 @@ export const LoanEligibilityModal: React.FC<LoanEligibilityModalProps> = ({
 
                 <div className="pt-4 border-t border-gray-100 dark:border-davys-gray/40">
                   <div className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">
-                    Eligible Loan ({annualRate}% rate & {tenureMonths}m tenure)
+                    {translations?.checkEligibilityBtn || "Eligible Loan"} ({annualRate}% {translations?.interestRateLabel || "rate"} & {tenureMonths}{translations?.monthSuffix || "m"} {translations?.tenureMonthsLabel || "tenure"})
                   </div>
                   <div className="text-2xl font-black text-primary tracking-tight dark:text-indigo-400">
                     {formatCurrency(calculatedByFOIR, currencyCode, currencyLocale)}
@@ -241,7 +244,7 @@ export const LoanEligibilityModal: React.FC<LoanEligibilityModalProps> = ({
                     className="w-full mt-4 font-bold text-xs rounded-lg h-9 bg-primary dark:bg-indigo-600"
                     onClick={() => handleApply(calculatedByFOIR)}
                   >
-                    Use FOIR Capacity Plan
+                    {translations?.usableFoirPlanBtn || "Use FOIR Capacity Plan"}
                   </Button>
                 </div>
               </div>
@@ -252,9 +255,9 @@ export const LoanEligibilityModal: React.FC<LoanEligibilityModalProps> = ({
             <div className="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-xl border border-amber-100 dark:border-amber-900/15 flex gap-3 text-xs leading-relaxed text-amber-800 dark:text-amber-300">
               <HelpCircle size={18} className="flex-shrink-0 text-amber-500 mt-0.5" />
               <div>
-                <p className="font-bold text-amber-900 dark:text-amber-200 mb-1">Financial Safety Guidelines:</p>
+                <p className="font-bold text-amber-900 dark:text-amber-200 mb-1">{translations?.safetyGuidelinesLabel || "Financial Safety Guidelines:"}</p>
                 <p>
-                  While a <span className="font-semibold">75x Net Income multiplier</span> is widely used by banks to estimate absolute eligibility boundaries, the <span className="font-semibold">FOIR / EMI Model</span> represents a more durable financial limit. It ensures that your remaining income easily covers standard operational living costs, and emergency financial events.
+                  {translations?.safetyGuidelinesText || "While a 75x Net Income multiplier is widely used by banks to estimate absolute eligibility boundaries, the FOIR / EMI Model represents a more durable financial limit. It ensures that your remaining income easily covers standard operational living costs, and emergency financial events."}
                 </p>
               </div>
             </div>

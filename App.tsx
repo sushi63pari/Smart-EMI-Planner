@@ -59,6 +59,146 @@ interface ToastMessage {
   month: number;
 }
 
+const getResetModalStringsByLanguage = (lang: string) => {
+  switch (lang) {
+    case 'hi':
+      return {
+        title: "गणना रीसेट करें?",
+        body: "क्या आप वाकई सभी गणनाओं को रीसेट करना चाहते हैं? इससे आपके सभी इनपुट और जोड़े गए इवेंट साफ़ हो जाएंगे।",
+        yes: "हाँ, रीसेट करें",
+        cancel: "रद्द करें"
+      };
+    case 'ml':
+      return {
+        title: "കണക്കുകൂട്ടലുകൾ റീസെറ്റ് ചെയ്യണോ?",
+        body: "എല്ലാ കണക്കുകൂട്ടലുകളും റീസെറ്റ് ചെയ്യണമെന്ന് ഉറപ്പാണോ? ഇത് നിങ്ങളുടെ ഇൻപുട്ടുകളും ഇവന്റുകളും ഇല്ലാതാക്കും.",
+        yes: "അതെ, റീസെറ്റ് ചെയ്യുക",
+        cancel: "റദ്ദാക്കുക"
+      };
+    case 'kn':
+      return {
+        title: "ಲೆಕ್ಕಾಚಾರಗಳನ್ನು ಮರುಹೊಂದಿಸಬೇಕೆ?",
+        body: "ಎಲ್ಲಾ ಲೆಕ್ಕಾಚಾರಗಳನ್ನು ಮರುಹೊಂದಿಸಲು ನೀವು ಖಚಿತವಾಗಿ ಬಯಸುವಿರಾ? ಇದು ನಿಮ್ಮ ಇನ್ಪುಟ್ ಮತ್ತು ಇವೆಂಟ್ಗಳನ್ನು ತೆರವುಗೊಳಿಸುತ್ತದೆ.",
+        yes: "ಹೌದು, ರಿಸೆಟ್ ಮಾಡಿ",
+        cancel: "ರದ್ದುಮಾಡಿ"
+      };
+    case 'pa':
+      return {
+        title: "ਹਿਸਾਬ ਰੀਸੈਟ ਕਰੀਏ?",
+        body: "ਕੀ ਤੁਸੀਂ ਯਕੀਨਨ ਸਾਰੇ ਹਿਸਾਬ-ਕਿਤਾਬ ਰੀਸੈਟ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ? ਇਹ ਸਾਰੇ ਇਨਪੁਟ ਅਤੇ ਜੋੜੇ ਗਏ ਇਵੈਂਟ ਸਾਫ਼ ਕਰ ਦੇਵੇਗਾ।",
+        yes: "ਹਾਂ, ਰੀਸੈਟ ਕਰੋ",
+        cancel: "ਰੱਦ ਕਰੋ"
+      };
+    case 'ta':
+      return {
+        title: "கணக்கீடுகளை மீட்டமைக்கவா?",
+        body: "நிச்சயமாக மீட்டமைக்க வேண்டுமா? இது அனைத்து உள்ளீடுகளையும் நிகழ்வுகளையும் அழித்துவிடும்.",
+        yes: "ஆம், மீட்டமைக்கவும்",
+        cancel: "ரத்து செய்"
+      };
+    case 'te':
+      return {
+        title: "గణనలను రీసెట్ చేయాలా?",
+        body: "ఖచ్చితంగా రీసెట్ చేయాలనుకుంటున్నారా? ఇది మీ వివరాలన్నింటినీ, ఈవెంట్‌లను తొలగిస్తుంది.",
+        yes: "అవును, రీసెట్ చేయండి",
+        cancel: "రద్దు చేయి"
+      };
+    case 'bn':
+      return {
+        title: "হিসাব রিসেট করবেন?",
+        body: "আপনি কি নিশ্চিত যে হিসাব রিসেট করতে চান? আপনার সমস্ত তথ্য ও ইভেন্ট মুছে যাবে।",
+        yes: "হ্যাঁ, রিসেট করুন",
+        cancel: "বাতিল করুন"
+      };
+    case 'mr':
+      return {
+        title: "गणना रीसेट करायची?",
+        body: "तुम्हाला नक्की सर्व गणना रीसेट करायच्या आहेत का? तुमचे सर्व इनपुट आणि इव्हेंट साफ होतील.",
+        yes: "होय, रीसेट करा",
+        cancel: "रद्द करा"
+      };
+    case 'fr':
+      return {
+        title: "Réinitialiser les calculs ?",
+        body: "Êtes-vous sûr de vouloir réinitialiser tous les calculs ? Cela effacera tous vos événements et saisies.",
+        yes: "Oui, réinitialiser",
+        cancel: "Annuler"
+      };
+    default:
+      return {
+        title: "Reset Calculations?",
+        body: "Are you sure you want to reset all calculations? This will clear all your inputs and scheduled events.",
+        yes: "Yes, Reset",
+        cancel: "Cancel"
+      };
+  }
+};
+
+const getToastStringsByLanguage = (lang: string) => {
+  switch (lang) {
+    case 'hi':
+      return {
+        added: "आंशिक भुगतान जोड़ा गया!",
+        savedMsg: "अवधि बचाई गई:",
+        reducedMsg: "ईएमआई कम हो गई! अवधि अपरिवर्तित रहती है।"
+      };
+    case 'ml':
+      return {
+        added: "ഭാഗിക പണമടയ്ക്കൽ ചേർത്തു!",
+        savedMsg: "കാലാവധി ലാഭിച്ചു:",
+        reducedMsg: "ഇഎംഐ കുറഞ്ഞു! കാലാവധി മാറില്ല."
+      };
+    case 'kn':
+      return {
+        added: "ಭಾಗಶಃ ಪಾವತಿ ಸೇರಿಸಲಾಗಿದೆ!",
+        savedMsg: "ಉಳಿಸಿದ ಅವಧಿ:",
+        reducedMsg: "ಇಎಮ್ಐ ಕಡಿತ ಸಂಪೂರ್ಣ! ಅವಧಿ ಬದಲಾಗಿಲ್ಲ."
+      };
+    case 'pa':
+      return {
+        added: "ਹਿੱਸਾ ਅਦਾਇਗੀ ਜੋੜੀ ਗਈ!",
+        savedMsg: "ਮਿਆਦ ਬਚੀ:",
+        reducedMsg: "ਈਐਮਆਈ ਘੱਟ ਗਈ! ਕੋਈ ਮਿਆਦ ਨਹੀਂ ਬਦਲੀ।"
+      };
+    case 'ta':
+      return {
+        added: "பகுதி செலுத்தப்பட்டது!",
+        savedMsg: "காலம் சேமிக்கப்பட்டது:",
+        reducedMsg: "EMI குறைந்தது! காலம் மாறவில்லை."
+      };
+    case 'te':
+      return {
+        added: "పాక్షిక చెల్లింపు జోడించబడింది!",
+        savedMsg: "గడువు ఆదా అయింది:",
+        reducedMsg: "EMI తగ్గింది! వ్యవధి మారలేదు."
+      };
+    case 'bn':
+      return {
+        added: "আংশিক অর্থপ্রদান যোগ করা হয়েছে!",
+        savedMsg: "মেয়াদ বাঁচানো গেছে:",
+        reducedMsg: "EMI হ্রাস পেয়েছে! মেয়াদ একই।"
+      };
+    case 'mr':
+      return {
+        added: "भाग देयक जोडले गेले!",
+        savedMsg: "कालावधी वाचली:",
+        reducedMsg: "ईएमआय कमी झाला! मुदत सारखीच."
+      };
+    case 'fr':
+      return {
+        added: "Remboursement partiel ajouté !",
+        savedMsg: "Mensualités sauvées :",
+        reducedMsg: "Mensualité réduite ! Durée identique."
+      };
+    default:
+      return {
+        added: "Part Payment Added!",
+        savedMsg: "Saved loan duration by:",
+        reducedMsg: "EMI reduced! Tenure unchanged."
+      };
+  }
+};
+
 const App: React.FC = () => {
   // State
   const [inputs, setInputs] = useState<LoanInput>({
@@ -387,16 +527,16 @@ const App: React.FC = () => {
                   </div>
                   <p className="mt-2 text-[11px] text-gray-500 dark:text-silver-gray leading-normal">
                     {selectedCurrency.code === 'INR' ? (
-                      <span>🇮🇳 Set to <strong>Indian Numbering Format (Lakhs & Crores)</strong>. Best for domestic loans.</span>
+                      <span>🇮🇳 {t.indianNumFormatText}</span>
                     ) : (
-                      <span>🌐 Set to <strong>Global Numbering Format (Millions & Billions)</strong>. Perfect for international analysis.</span>
+                      <span>🌐 {t.globalNumFormatText}</span>
                     )}
                   </p>
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-gray-400 dark:text-silver-gray uppercase tracking-wider mb-2">
-                    App Language / भाषा
+                    {t.appLanguageLabel}
                   </label>
                   <div className="relative">
                     <select
@@ -581,6 +721,7 @@ const App: React.FC = () => {
               currencySymbol={selectedCurrency.symbol}
               currencyCode={selectedCurrency.code}
               currencyLocale={selectedCurrency.locale}
+              translations={t}
             />
 
             <AmortizationChart 
@@ -590,12 +731,14 @@ const App: React.FC = () => {
               currencySymbol={selectedCurrency.symbol}
               currencyCode={selectedCurrency.code}
               currencyLocale={selectedCurrency.locale}
+              translations={t}
             />
 
             <AmortizationTable 
               schedule={result.schedule} 
               currencyCode={selectedCurrency.code}
               currencyLocale={selectedCurrency.locale}
+              translations={t}
             />
           </div>
         </div>
@@ -612,89 +755,96 @@ const App: React.FC = () => {
         currencyCode={selectedCurrency.code}
         currencyLocale={selectedCurrency.locale}
         onApplyPrincipal={handleApplyPrincipal}
+        translations={t}
       />
 
       {/* Reset Confirmation Modal */}
-      {showResetConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-silver-gray rounded-2xl shadow-xl max-w-md w-full p-5 sm:p-6 border border-gray-100 dark:border-davys-gray animate-in zoom-in-95 duration-200">
-            <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-              <div className="bg-red-50 dark:bg-red-900/10 p-2 sm:p-3 rounded-full text-red-500">
-                <AlertTriangle size={20} className="sm:w-6 sm:h-6" />
+      {showResetConfirm && (() => {
+        const resetStrings = getResetModalStringsByLanguage(language);
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white dark:bg-silver-gray rounded-2xl shadow-xl max-w-md w-full p-5 sm:p-6 border border-gray-100 dark:border-davys-gray animate-in zoom-in-95 duration-200">
+              <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+                <div className="bg-red-50 dark:bg-red-900/10 p-2 sm:p-3 rounded-full text-red-500">
+                  <AlertTriangle size={20} className="sm:w-6 sm:h-6" />
+                </div>
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-davys-gray">{resetStrings.title}</h3>
               </div>
-              <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-davys-gray">Reset Calculations?</h3>
-            </div>
-            <p className="text-sm sm:text-base text-gray-600 dark:text-davys-gray/80 mb-5 sm:mb-6">
-              Are you sure you want to reset all calculations? This will clear all your inputs and scheduled events.
-            </p>
-            <div className="flex gap-3">
-              <Button 
-                variant="outline" 
-                className="flex-1 dark:border-davys-gray dark:text-davys-gray dark:hover:bg-davys-gray/10"
-                onClick={() => setShowResetConfirm(false)}
-              >
-                Cancel
-              </Button>
-              <Button 
-                variant="danger" 
-                className="flex-1"
-                onClick={confirmReset}
-              >
-                Yes, Reset
-              </Button>
+              <p className="text-sm sm:text-base text-gray-600 dark:text-davys-gray/80 mb-5 sm:mb-6">
+                {resetStrings.body}
+              </p>
+              <div className="flex gap-3">
+                <Button 
+                  variant="outline" 
+                  className="flex-1 dark:border-davys-gray dark:text-davys-gray dark:hover:bg-davys-gray/10"
+                  onClick={() => setShowResetConfirm(false)}
+                >
+                  {resetStrings.cancel}
+                </Button>
+                <Button 
+                  variant="danger" 
+                  className="flex-1"
+                  onClick={confirmReset}
+                >
+                  {resetStrings.yes}
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Toast Notification Container */}
       <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-3 max-w-sm w-full font-sans pointer-events-none px-4 sm:px-0 no-print">
         <AnimatePresence>
-          {toasts.map(toast => (
-            <motion.div
-              key={toast.id}
-              initial={{ opacity: 0, y: 50, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.85, transition: { duration: 0.2 } }}
-              className="bg-white dark:bg-silver-gray text-gray-900 dark:text-davys-gray pointer-events-auto rounded-xl p-4 shadow-lg border border-gray-100 dark:border-davys-gray/40 flex gap-3 items-start ring-1 ring-black/5"
-            >
-              {/* Icon */}
-              <div className="bg-green-500/10 text-green-600 dark:text-green-500 w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center animate-pulse font-bold text-sm">
-                {selectedCurrency.symbol}
-              </div>
-
-              {/* Toast details */}
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm text-gray-900 dark:text-white">
-                  Part Payment Added!
-                </p>
-                <p className="text-xs text-gray-500 dark:text-davys-gray mt-0.5">
-                  Month {toast.month}: {formatCurrency(toast.amount, selectedCurrency.code, selectedCurrency.locale)} payment applied.
-                </p>
-                
-                {toast.monthsSaved > 0 ? (
-                  <div className="flex items-center gap-1.5 mt-2 bg-green-500/10 text-green-600 dark:text-green-400 font-medium text-xs px-2 py-1 rounded-md w-fit">
-                    <span>🎉 Saved {toast.monthsSaved} {toast.monthsSaved === 1 ? 'month' : 'months'} of tenure!</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-1.5 mt-2 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-medium text-xs px-2 py-1 rounded-md w-fit font-sans">
-                    <span>📉 EMI reduced! Tenure unchanged.</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Dismiss button */}
-              <button 
-                onClick={() => removeToast(toast.id)}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
-                id={`dismiss-toast-${toast.id}`}
+          {toasts.map(toast => {
+            const toastStrings = getToastStringsByLanguage(language);
+            return (
+              <motion.div
+                key={toast.id}
+                initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.85, transition: { duration: 0.2 } }}
+                className="bg-white dark:bg-silver-gray text-gray-900 dark:text-davys-gray pointer-events-auto rounded-xl p-4 shadow-lg border border-gray-100 dark:border-davys-gray/40 flex gap-3 items-start ring-1 ring-black/5"
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </motion.div>
-          ))}
+                {/* Icon */}
+                <div className="bg-green-500/10 text-green-600 dark:text-green-500 w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center animate-pulse font-bold text-sm">
+                  {selectedCurrency.symbol}
+                </div>
+
+                {/* Toast details */}
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm text-gray-900 dark:text-white">
+                    {toastStrings.added}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-davys-gray mt-0.5">
+                    {t.monthText || "Month"} {toast.month}: {formatCurrency(toast.amount, selectedCurrency.code, selectedCurrency.locale)} {t.amountLabel || "payment"} {t.todayLabel ? (t.appTitle === "स्मार्ट ईएमआई प्लानर" ? "लागू किया गया।" : "applied.") : "applied."}
+                  </p>
+                  
+                  {toast.monthsSaved > 0 ? (
+                    <div className="flex items-center gap-1.5 mt-2 bg-green-500/10 text-green-600 dark:text-green-400 font-medium text-xs px-2 py-1 rounded-md w-fit">
+                      <span>🎉 {toastStrings.savedMsg} {toast.monthsSaved} {toast.monthsSaved === 1 ? (t.monthsLabel ? (t.appTitle === "स्मार्ट ईएमआई प्लानर" ? "महीना" : "month") : "month") : (t.monthsLabel ? t.monthsLabel.toLowerCase() : "months")}!</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1.5 mt-2 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-medium text-xs px-2 py-1 rounded-md w-fit font-sans">
+                      <span>{toastStrings.reducedMsg}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Dismiss button */}
+                <button 
+                  onClick={() => removeToast(toast.id)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                  id={`dismiss-toast-${toast.id}`}
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </motion.div>
+            );
+          })}
         </AnimatePresence>
       </div>
     </div>

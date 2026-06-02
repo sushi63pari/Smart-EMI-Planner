@@ -1,29 +1,32 @@
 import React from 'react';
 import { ScheduleItem } from '../types';
 import { formatCurrency } from '../utils/calculations';
+import { AppTranslations } from '../utils/translations';
 
 interface AmortizationTableProps {
   schedule: ScheduleItem[];
   currencyCode: string;
   currencyLocale: string;
+  translations?: AppTranslations;
 }
 
 export const AmortizationTable: React.FC<AmortizationTableProps> = ({ 
   schedule,
   currencyCode,
-  currencyLocale
+  currencyLocale,
+  translations
 }) => {
   const [showDates, setShowDates] = React.useState(true);
 
   return (
     <div className="bg-white dark:bg-silver-gray rounded-xl shadow-sm border border-gray-100 dark:border-davys-gray overflow-hidden transition-colors duration-300">
       <div className="p-4 sm:p-6 border-b border-gray-100 dark:border-davys-gray flex items-center justify-between">
-        <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-davys-gray">Amortization Schedule</h3>
+        <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-davys-gray">{translations?.amortizationScheduleHeader || "Amortization Schedule"}</h3>
         <button 
           onClick={() => setShowDates(!showDates)}
           className="text-sm font-medium text-primary hover:underline"
         >
-          {showDates ? 'Show Month #' : 'Show Dates'}
+          {showDates ? (translations?.showMonthNumLabel || 'Show Month #') : (translations?.showDatesLabel || 'Show Dates')}
         </button>
       </div>
       <div className="overflow-x-auto custom-scrollbar">
@@ -31,14 +34,14 @@ export const AmortizationTable: React.FC<AmortizationTableProps> = ({
           <thead className="bg-gray-50 dark:bg-davys-gray/10">
             <tr>
               <th scope="col" className="px-3 sm:px-6 py-2 sm:py-3 text-left text-[9px] sm:text-xs font-medium text-gray-500 dark:text-davys-gray uppercase tracking-wider">
-                {showDates ? 'Date' : 'Month'}
+                {showDates ? (translations?.tableColDate || 'Date') : (translations?.tableColMonth || 'Month')}
               </th>
-              <th scope="col" className="px-3 sm:px-6 py-2 sm:py-3 text-right text-[9px] sm:text-xs font-medium text-gray-500 dark:text-davys-gray uppercase tracking-wider">Opening</th>
-              <th scope="col" className="px-3 sm:px-6 py-2 sm:py-3 text-right text-[9px] sm:text-xs font-medium text-gray-500 dark:text-davys-gray uppercase tracking-wider">EMI</th>
-              <th scope="col" className="px-3 sm:px-6 py-2 sm:py-3 text-right text-[9px] sm:text-xs font-medium text-gray-500 dark:text-davys-gray uppercase tracking-wider">Principal</th>
-              <th scope="col" className="px-3 sm:px-6 py-2 sm:py-3 text-right text-[9px] sm:text-xs font-medium text-gray-500 dark:text-davys-gray uppercase tracking-wider">Interest</th>
-              <th scope="col" className="px-3 sm:px-6 py-2 sm:py-3 text-right text-[9px] sm:text-xs font-medium text-gray-500 dark:text-davys-gray uppercase tracking-wider">Extra Paid</th>
-              <th scope="col" className="px-3 sm:px-6 py-2 sm:py-3 text-right text-[9px] sm:text-xs font-medium text-gray-500 dark:text-davys-gray uppercase tracking-wider">Closing</th>
+              <th scope="col" className="px-3 sm:px-6 py-2 sm:py-3 text-right text-[9px] sm:text-xs font-medium text-gray-500 dark:text-davys-gray uppercase tracking-wider">{translations?.tableColOpening || 'Opening'}</th>
+              <th scope="col" className="px-3 sm:px-6 py-2 sm:py-3 text-right text-[9px] sm:text-xs font-medium text-gray-500 dark:text-davys-gray uppercase tracking-wider">{translations?.tableColEmi || 'EMI'}</th>
+              <th scope="col" className="px-3 sm:px-6 py-2 sm:py-3 text-right text-[9px] sm:text-xs font-medium text-gray-500 dark:text-davys-gray uppercase tracking-wider">{translations?.tableColPrincipal || 'Principal'}</th>
+              <th scope="col" className="px-3 sm:px-6 py-2 sm:py-3 text-right text-[9px] sm:text-xs font-medium text-gray-500 dark:text-davys-gray uppercase tracking-wider">{translations?.tableColInterest || 'Interest'}</th>
+              <th scope="col" className="px-3 sm:px-6 py-2 sm:py-3 text-right text-[9px] sm:text-xs font-medium text-gray-500 dark:text-davys-gray uppercase tracking-wider">{translations?.tableColExtraPaid || 'Extra Paid'}</th>
+              <th scope="col" className="px-3 sm:px-6 py-2 sm:py-3 text-right text-[9px] sm:text-xs font-medium text-gray-500 dark:text-davys-gray uppercase tracking-wider">{translations?.tableColClosing || 'Closing'}</th>
             </tr>
           </thead>
           <tbody className="bg-white dark:bg-silver-gray divide-y divide-gray-200 dark:divide-davys-gray">

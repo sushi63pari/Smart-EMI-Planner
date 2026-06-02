@@ -3,6 +3,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { motion, AnimatePresence } from 'framer-motion';
 import { ScheduleItem } from '../types';
 import { formatCurrency } from '../utils/calculations';
+import { AppTranslations } from '../utils/translations';
 
 interface AmortizationChartProps {
   data: ScheduleItem[];
@@ -11,6 +12,7 @@ interface AmortizationChartProps {
   currencySymbol: string;
   currencyCode: string;
   currencyLocale: string;
+  translations?: AppTranslations;
 }
 
 export const AmortizationChart: React.FC<AmortizationChartProps> = ({ 
@@ -19,11 +21,12 @@ export const AmortizationChart: React.FC<AmortizationChartProps> = ({
   totalInterest,
   currencySymbol,
   currencyCode,
-  currencyLocale
+  currencyLocale,
+  translations
 }) => {
   const pieData = [
-    { name: 'Principal', value: principal },
-    { name: 'Total Interest', value: totalInterest },
+    { name: translations?.principalLabel || 'Principal', value: principal },
+    { name: translations?.interestLabel || 'Total Interest', value: totalInterest },
   ];
   const COLORS = ['#4F46E5', '#F59E0B'];
 
@@ -51,7 +54,7 @@ export const AmortizationChart: React.FC<AmortizationChartProps> = ({
         layout
         className="bg-white dark:bg-silver-gray p-6 rounded-xl shadow-sm border border-gray-100 dark:border-davys-gray lg:col-span-2 transition-colors duration-300"
       >
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-davys-gray mb-6">Amortization Curve</h3>
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-davys-gray mb-6">{translations?.amortizationCurveHeader || "Amortization Curve"}</h3>
         <div className="h-56 sm:h-72 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
@@ -95,7 +98,7 @@ export const AmortizationChart: React.FC<AmortizationChartProps> = ({
                 strokeWidth={3}
                 fillOpacity={1} 
                 fill="url(#colorBalance)" 
-                name="Outstanding Balance"
+                name={translations?.outstandingBalanceLabel || "Outstanding Balance"}
                 isAnimationActive={true}
                 animationDuration={1500}
                 animationEasing="ease-in-out"
@@ -113,7 +116,7 @@ export const AmortizationChart: React.FC<AmortizationChartProps> = ({
         layout
         className="bg-white dark:bg-silver-gray p-6 rounded-xl shadow-sm border border-gray-100 dark:border-davys-gray transition-colors duration-300"
       >
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-davys-gray mb-2">Total Breakup</h3>
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-davys-gray mb-2">{translations?.totalBreakupHeader || "Total Breakup"}</h3>
         <div className="h-56 sm:h-64 w-full relative">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -150,7 +153,7 @@ export const AmortizationChart: React.FC<AmortizationChartProps> = ({
           {/* Center Text */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none pb-8">
             <div className="text-center">
-              <span className="text-xs text-gray-500 dark:text-davys-gray block">Total Payable</span>
+              <span className="text-xs text-gray-500 dark:text-davys-gray block">{translations?.totalPayableLabel || "Total Payable"}</span>
               <AnimatePresence mode="wait">
                 <motion.span 
                   key={totalPayable}
@@ -176,7 +179,7 @@ export const AmortizationChart: React.FC<AmortizationChartProps> = ({
         layout
         className="bg-white dark:bg-silver-gray p-6 rounded-xl shadow-sm border border-gray-100 dark:border-davys-gray lg:col-span-3 transition-colors duration-300"
       >
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-davys-gray mb-6">Principal vs Interest Component</h3>
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-davys-gray mb-6">{translations?.principalAndInterestHeader || "Principal vs Interest Component"}</h3>
         <div className="h-56 sm:h-64 w-full">
            <ResponsiveContainer width="100%" height="100%">
             <BarChart
@@ -202,7 +205,7 @@ export const AmortizationChart: React.FC<AmortizationChartProps> = ({
                 dataKey="principalComponent" 
                 stackId="a" 
                 fill="#10B981" 
-                name="Principal" 
+                name={translations?.principalLabel || "Principal"} 
                 radius={[0, 0, 4, 4]} 
                 isAnimationActive={true}
                 animationDuration={1500}
@@ -212,7 +215,7 @@ export const AmortizationChart: React.FC<AmortizationChartProps> = ({
                 dataKey="interestComponent" 
                 stackId="a" 
                 fill="#F59E0B" 
-                name="Interest" 
+                name={translations?.interestLabel || "Interest"} 
                 radius={[4, 4, 0, 0]} 
                 isAnimationActive={true}
                 animationDuration={1500}

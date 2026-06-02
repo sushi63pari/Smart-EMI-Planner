@@ -67,7 +67,7 @@ export const EventSection: React.FC<EventSectionProps> = ({
                 : 'bg-white dark:bg-silver-gray text-gray-700 dark:text-davys-gray border-gray-200 dark:border-davys-gray hover:bg-gray-50 dark:hover:bg-davys-gray/10'
             }`}
           >
-            Part Payment
+            {translations?.partPaymentTab || "Part Payment"}
           </button>
           <button
             type="button"
@@ -78,25 +78,25 @@ export const EventSection: React.FC<EventSectionProps> = ({
                 : 'bg-white dark:bg-silver-gray text-gray-700 dark:text-davys-gray border-gray-200 dark:border-davys-gray hover:bg-gray-50 dark:hover:bg-davys-gray/10'
             }`}
           >
-            Rate Change
+            {translations?.rateChangeTab || "Rate Change"}
           </button>
         </div>
 
         {/* Inputs */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input 
-            label="After Month" 
+            label={translations?.afterMonthLabel || "After Month"} 
             type="number" 
             min={1} 
             max={maxMonths}
             value={month}
             onChange={(e) => setMonth(Number(e.target.value))}
-            suffix="th Month"
-            tooltip="The month number after which this change will take effect"
+            suffix={translations?.monthSuffix || "th Month"}
+            tooltip={translations?.afterMonthTooltip || "The month number after which this change will take effect"}
           />
           
           <Input 
-            label={eventType === EventType.PART_PAYMENT ? "Amount" : "New Interest Rate"}
+            label={eventType === EventType.PART_PAYMENT ? (translations?.amountLabel || "Amount") : (translations?.newInterestRateLabel || "New Interest Rate")}
             type="number"
             min={0}
             step={eventType === EventType.RATE_CHANGE ? 0.1 : 1000}
@@ -104,13 +104,13 @@ export const EventSection: React.FC<EventSectionProps> = ({
             onChange={(e) => setValue(Number(e.target.value))}
             icon={eventType === EventType.PART_PAYMENT ? <span className="text-sm font-semibold text-gray-500 dark:text-silver-gray">{currencySymbol}</span> : undefined}
             suffix={eventType === EventType.RATE_CHANGE ? "%" : undefined}
-            tooltip={eventType === EventType.PART_PAYMENT ? "Enter the part payment amount" : "Enter the new annual interest rate"}
+            tooltip={eventType === EventType.PART_PAYMENT ? (translations?.amountTooltip || "Enter the part payment amount") : (translations?.rateTooltip || "Enter the new annual interest rate")}
           />
         </div>
 
         {eventType === EventType.PART_PAYMENT && (
           <div className="p-3 bg-gray-50 dark:bg-davys-gray/10 rounded-lg space-y-2">
-            <span className="text-xs font-semibold text-gray-500 dark:text-davys-gray uppercase tracking-wider">Effect</span>
+            <span className="text-xs font-semibold text-gray-500 dark:text-davys-gray uppercase tracking-wider">{translations?.effectLabel || "Effect"}</span>
             <div className="flex gap-4">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input 
@@ -120,7 +120,7 @@ export const EventSection: React.FC<EventSectionProps> = ({
                   onChange={() => setStrategy(PartPaymentStrategy.REDUCE_TENURE)}
                   className="text-primary focus:ring-primary dark:bg-davys-gray dark:border-davys-gray"
                 />
-                <span className="text-xs sm:text-sm text-gray-700 dark:text-davys-gray">Reduce Tenure</span>
+                <span className="text-xs sm:text-sm text-gray-700 dark:text-davys-gray">{translations?.reduceTenureStrategy || "Reduce Tenure"}</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input 
@@ -130,21 +130,21 @@ export const EventSection: React.FC<EventSectionProps> = ({
                   onChange={() => setStrategy(PartPaymentStrategy.REDUCE_EMI)}
                   className="text-primary focus:ring-primary dark:bg-davys-gray dark:border-davys-gray"
                 />
-                <span className="text-xs sm:text-sm text-gray-700 dark:text-davys-gray">Reduce EMI</span>
+                <span className="text-xs sm:text-sm text-gray-700 dark:text-davys-gray">{translations?.reduceEmiStrategy || "Reduce EMI"}</span>
               </label>
             </div>
           </div>
         )}
 
         <Button onClick={handleAdd} className="w-full" icon={<Plus size={18} />}>
-          Add Event
+          {translations?.addEventBtn || "Add Event"}
         </Button>
       </div>
 
       {/* Event List */}
       {events.length > 0 && (
         <div className="mt-6 border-t dark:border-davys-gray pt-4">
-          <h4 className="text-xs sm:text-sm font-medium text-gray-500 dark:text-davys-gray mb-3">Scheduled Events</h4>
+          <h4 className="text-xs sm:text-sm font-medium text-gray-500 dark:text-davys-gray mb-3">{translations?.scheduledEventsHeader || "Scheduled Events"}</h4>
           <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-1">
             {events.map((event) => (
               <div key={event.id} className="flex items-center justify-between p-3 bg-white dark:bg-silver-gray border border-gray-100 dark:border-davys-gray rounded-lg shadow-sm text-xs sm:text-sm">
@@ -154,12 +154,12 @@ export const EventSection: React.FC<EventSectionProps> = ({
                   </div>
                   <div>
                     <p className="font-medium text-gray-900 dark:text-davys-gray">
-                      Month {event.month}: {event.type === EventType.PART_PAYMENT ? 'Part Payment' : 'Rate Change'}
+                      {translations?.monthText || "Month"} {event.month}: {event.type === EventType.PART_PAYMENT ? (translations?.partPaymentTab || 'Part Payment') : (translations?.rateChangeTab || 'Rate Change')}
                     </p>
                     <p className="text-[10px] sm:text-xs text-gray-500 dark:text-davys-gray">
                       {event.type === EventType.PART_PAYMENT 
-                        ? `${formatCurrency(event.value, currencyCode, currencyLocale)} (${event.strategy === PartPaymentStrategy.REDUCE_EMI ? 'Reduce EMI' : 'Reduce Tenure'})` 
-                        : `New Rate: ${event.value}%`}
+                        ? `${formatCurrency(event.value, currencyCode, currencyLocale)} (${event.strategy === PartPaymentStrategy.REDUCE_EMI ? (translations?.reduceEmiStrategy || 'Reduce EMI') : (translations?.reduceTenureStrategy || 'Reduce Tenure')})` 
+                        : `${translations?.newRateText || 'New Rate'}: ${event.value}%`}
                     </p>
                   </div>
                 </div>
