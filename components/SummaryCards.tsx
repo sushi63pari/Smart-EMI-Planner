@@ -1,6 +1,6 @@
 import React from 'react';
 import { formatCurrency } from '../utils/calculations';
-import { CalendarClock, Coins, Wallet, Info } from 'lucide-react';
+import { CalendarClock, Coins, Wallet, Info, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface SummaryCardsProps {
@@ -11,6 +11,11 @@ interface SummaryCardsProps {
   originalTenure: number;
   startDate?: string;
   endDate?: string;
+  partPaymentMonthsSaved?: number;
+  monthlyIncome?: number;
+  currencySymbol: string;
+  currencyCode: string;
+  currencyLocale: string;
 }
 
 export const SummaryCards: React.FC<SummaryCardsProps> = ({ 
@@ -20,13 +25,21 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
   finalTenure,
   originalTenure,
   startDate,
-  endDate
+  endDate,
+  partPaymentMonthsSaved,
+  monthlyIncome,
+  currencySymbol,
+  currencyCode,
+  currencyLocale
 }) => {
   const tenureSaved = originalTenure - finalTenure;
   const principal = Math.max(0, totalPayment - totalInterest);
   const principalPct = totalPayment > 0 ? (principal / totalPayment * 100).toFixed(1) : '0';
   const interestPct = totalPayment > 0 ? (totalInterest / totalPayment * 100).toFixed(1) : '0';
   const costPerHundred = principal > 0 ? ((totalInterest / principal) * 100).toFixed(0) : '0';
+
+  const emiPct = monthlyIncome && monthlyIncome > 0 ? (monthlyEMI / monthlyIncome) * 100 : 0;
+  const emiExceedsLimit = emiPct > 40;
 
   const cardVariants = {
     hidden: { opacity: 0, scale: 0.95 },
@@ -49,16 +62,45 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
         variants={cardVariants}
         initial="hidden"
         animate="visible"
-        key={`emi-${monthlyEMI}`}
-        className="bg-gradient-to-br from-primary to-indigo-700 rounded-xl p-4 sm:p-6 text-white shadow-lg shadow-indigo-200"
+        key={`emi-${monthlyEMI}-${currencyCode}`}
+        className={`rounded-xl p-4 sm:p-6 text-white shadow-lg transition-all duration-300 ${
+          emiExceedsLimit
+            ? 'bg-gradient-to-br from-amber-600 to-red-700 shadow-red-100 dark:shadow-none'
+            : 'bg-gradient-to-br from-primary to-indigo-700 shadow-indigo-200 dark:shadow-none'
+        }`}
       >
         <div className="flex items-start justify-between">
-          <div>
-            <p className="text-indigo-100 text-[10px] sm:text-sm font-medium mb-1">Current EMI</p>
-            <h3 className="text-xl sm:text-3xl font-bold tracking-tight">{formatCurrency(monthlyEMI)}</h3>
+          <div className="flex-1">
+            <p className="text-indigo-100 text-[10px] sm:text-sm font-medium mb-1">
+              Current EMI {emiExceedsLimit && <span className="ml-1 text-[10px] bg-red-500/30 text-red-100 px-1.5 py-0.5 rounded-full font-bold">Risk Warning</span>}
+            </p>
+            <h3 className="text-xl sm:text-3xl font-bold tracking-tight">{formatCurrency(monthlyEMI, currencyCode, currencyLocale)}</h3>
             <p className="text-[10px] sm:text-xs text-indigo-200 mt-2 opacity-80">Monthly Instalment</p>
+            
+            {monthlyIncome && monthlyIncome > 0 && (
+              <div className="mt-4 pt-3 border-t border-white/20">
+                <div className="flex items-center justify-between text-xs font-semibold">
+                  <span className="text-indigo-200">% of Net Monthly Income:</span>
+                  <span className={emiExceedsLimit ? "text-amber-200 font-bold" : "text-green-300 font-bold"}>
+                    {emiPct.toFixed(1)}%
+                  </span>
+                </div>
+                {emiExceedsLimit ? (
+                  <div className="mt-2 flex items-start gap-1.5 bg-black/20 border border-amber-500/20 rounded p-2 text-[10px] text-amber-100 leading-normal font-sans">
+                    <AlertTriangle size={12} className="flex-shrink-0 text-amber-300 mt-0.5" />
+                    <span>
+                      Critical stress alert: EMI exceeds <span className="font-bold">40%</span> of your monthly income. This may impact your financial health and loan eligibility.
+                    </span>
+                  </div>
+                ) : (
+                  <div className="mt-2 text-[10px] text-green-200 font-medium font-sans">
+                    ✓ Your EMI is within the safe 40% threshold of your income.
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-          <div className="p-2 sm:p-3 bg-white/10 rounded-lg backdrop-blur-sm">
+          <div className="p-2 sm:p-3 bg-white/10 rounded-lg backdrop-blur-sm ml-2">
             <Wallet size={20} className="text-white sm:w-6 sm:h-6" />
           </div>
         </div>
@@ -70,7 +112,7 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
         variants={cardVariants}
         initial="hidden"
         animate="visible"
-        key={`interest-${totalInterest}`}
+        key={`interest-${totalInterest}-${currencyCode}`}
         className="bg-white dark:bg-silver-gray rounded-xl p-4 sm:p-6 border border-gray-100 dark:border-davys-gray shadow-sm transition-colors duration-300"
       >
         <div className="flex items-start justify-between">
@@ -90,25 +132,25 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
                   <div className="space-y-1.5 text-[11px] font-medium text-gray-200">
                     <div className="flex justify-between">
                       <span className="text-gray-400">Principal Paid:</span>
-                      <span>{formatCurrency(principal)} <span className="text-gray-400 text-[10px]">({principalPct}%)</span></span>
+                      <span>{formatCurrency(principal, currencyCode, currencyLocale)} <span className="text-gray-400 text-[10px]">({principalPct}%)</span></span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Interest Paid:</span>
-                      <span className="text-orange-400">{formatCurrency(totalInterest)} <span className="text-gray-400 text-[10px]">({interestPct}%)</span></span>
+                      <span className="text-orange-400">{formatCurrency(totalInterest, currencyCode, currencyLocale)} <span className="text-gray-400 text-[10px]">({interestPct}%)</span></span>
                     </div>
                     <div className="border-t border-gray-850 dark:border-zinc-800 pt-1.5 mt-1.5 flex justify-between font-bold text-gray-100">
                       <span>Total Outgoings:</span>
-                      <span>{formatCurrency(totalPayment)}</span>
+                      <span>{formatCurrency(totalPayment, currencyCode, currencyLocale)}</span>
                     </div>
                     <div className="text-[10px] text-gray-400 leading-relaxed pt-1.5 border-t border-gray-850 dark:border-zinc-800">
-                      For every <span className="text-white font-semibold">₹100</span> of principal repaid, you pay supplementary interest of <span className="text-orange-400 font-semibold">₹{costPerHundred}</span>.
+                      For every <span className="text-white font-semibold">{currencySymbol}100</span> of principal repaid, you pay supplementary interest of <span className="text-orange-400 font-semibold">{currencySymbol}{costPerHundred}</span>.
                     </div>
                   </div>
                   <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-zinc-900"></div>
                 </div>
               </div>
             </div>
-            <h3 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-davys-gray">{formatCurrency(totalInterest)}</h3>
+            <h3 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-davys-gray">{formatCurrency(totalInterest, currencyCode, currencyLocale)}</h3>
             <p className="text-[10px] sm:text-xs text-gray-400 dark:text-davys-gray mt-2">
               {(totalInterest / (totalPayment - totalInterest || 1) * 100).toFixed(1)}% of Principal
             </p>
@@ -144,8 +186,21 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
                 </p>
               )}
             </div>
-            {tenureSaved > 0 ? (
-               <p className="text-[10px] sm:text-xs text-green-600 dark:text-green-700 font-semibold mt-2">Saved {tenureSaved} months!</p>
+            {(tenureSaved > 0 || (partPaymentMonthsSaved && partPaymentMonthsSaved > 0)) ? (
+               <div className="mt-3 space-y-1 bg-green-50/50 dark:bg-green-950/10 p-2 rounded-lg border border-green-100/50 dark:border-green-900/20">
+                 {tenureSaved > 0 && (
+                   <p className="text-[10px] sm:text-xs text-green-700 dark:text-green-400 font-semibold flex justify-between gap-2">
+                     <span>Net Tenure Saved:</span>
+                     <span>{tenureSaved} months</span>
+                   </p>
+                 )}
+                 {partPaymentMonthsSaved !== undefined && partPaymentMonthsSaved > 0 && (
+                   <p className="text-[10px] sm:text-xs text-indigo-700 dark:text-indigo-400 font-semibold flex justify-between gap-2 border-t border-green-100/30 dark:border-green-900/10 pt-1">
+                     <span>Saved by Part-Payments:</span>
+                     <span>{partPaymentMonthsSaved} {partPaymentMonthsSaved === 1 ? 'month' : 'months'}</span>
+                   </p>
+                 )}
+               </div>
             ) : (
                <p className="text-[10px] sm:text-xs text-gray-400 dark:text-davys-gray mt-2">Full tenure</p>
             )}

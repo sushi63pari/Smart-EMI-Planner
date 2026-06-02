@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { LoanInput, LoanEvent, EventType, PartPaymentStrategy } from './types';
+import { LoanInput, LoanEvent, EventType, PartPaymentStrategy, CURRENCIES, CurrencyConfig } from './types';
 import { calculateAmortizationSchedule, formatCurrency } from './utils/calculations';
 import { Input } from './components/ui/Input';
 import { Button } from './components/ui/Button';
@@ -7,7 +7,7 @@ import { SummaryCards } from './components/SummaryCards';
 import { EventSection } from './components/EventSection';
 import { AmortizationChart } from './components/AmortizationChart';
 import { AmortizationTable } from './components/AmortizationTable';
-import { Calculator, IndianRupee, Percent, Calendar, RotateCcw, Printer, Sun, Moon, Download, Loader2, AlertTriangle } from 'lucide-react';
+import { Calculator, Percent, Calendar, RotateCcw, Printer, Sun, Moon, Download, Loader2, AlertTriangle } from 'lucide-react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -27,7 +27,23 @@ const App: React.FC = () => {
     annualRate: 8.5,
     tenureMonths: 120,
     startDate: new Date().toISOString().split('T')[0],
+    monthlyIncome: 100000,
   });
+
+  const [selectedCurrency, setSelectedCurrency] = useState<CurrencyConfig>(() => {
+    if (typeof window !== 'undefined') {
+      const savedCode = localStorage.getItem('currency_code');
+      if (savedCode) {
+        const found = CURRENCIES.find(curr => curr.code === savedCode);
+        if (found) return found;
+      }
+    }
+    return CURRENCIES[0];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('currency_code', selectedCurrency.code);
+  }, [selectedCurrency]);
 
   const [events, setEvents] = useState<LoanEvent[]>([]);
   const [errors, setErrors] = useState<{ [key in keyof LoanInput]?: string }>({});
@@ -57,6 +73,12 @@ const App: React.FC = () => {
     return calculateAmortizationSchedule(inputs, events);
   }, [inputs, events]);
 
+  const partPaymentMonthsSaved = useMemo(() => {
+    const onlyRateChanges = events.filter(e => e.type !== EventType.PART_PAYMENT);
+    const resultWithoutPartPayments = calculateAmortizationSchedule(inputs, onlyRateChanges);
+    return Math.max(0, resultWithoutPartPayments.finalTenure - result.finalTenure);
+  }, [inputs, events, result.finalTenure]);
+
   // Handlers
   const handleInputChange = (field: keyof LoanInput, value: string) => {
     const numValue = Number(value);
@@ -68,14 +90,17 @@ const App: React.FC = () => {
       error = 'Please enter a valid number';
     } else {
       if (field === 'principal') {
-        if (numValue < 1000) error = 'Minimum loan amount is ₹1,000';
-        if (numValue > 1000000000) error = 'Maximum loan amount is ₹100 Cr';
+        if (numValue < 1000) error = `Minimum loan amount is ${selectedCurrency.symbol}1,000`;
+        if (numValue > 1000000000) error = `Maximum loan amount is ${selectedCurrency.symbol}100 Cr`;
       } else if (field === 'annualRate') {
         if (numValue <= 0) error = 'Interest rate must be greater than 0';
         if (numValue > 100) error = 'Interest rate cannot exceed 100%';
       } else if (field === 'tenureMonths') {
         if (numValue < 1) error = 'Tenure must be at least 1 month';
         if (numValue > 600) error = 'Tenure cannot exceed 600 months (50 years)';
+      } else if (field === 'monthlyIncome') {
+        if (numValue < 0) error = 'Monthly income cannot be negative';
+        if (numValue > 100000000) error = `Income cannot exceed ${selectedCurrency.symbol}10 Cr`;
       }
     }
 
@@ -138,6 +163,7 @@ const App: React.FC = () => {
       annualRate: 8.5,
       tenureMonths: 120,
       startDate: new Date().toISOString().split('T')[0],
+      monthlyIncome: 100000,
     });
     setEvents([]);
     setErrors({});
@@ -264,10 +290,44 @@ const App: React.FC = () => {
               
               <div className="space-y-6">
                 <div>
+                  <label className="block text-xs font-semibold text-gray-400 dark:text-silver-gray uppercase tracking-wider mb-2">
+                    Regional Profile & Currency
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={selectedCurrency.code}
+                      onChange={(e) => {
+                        const found = CURRENCIES.find(c => c.code === e.target.value);
+                        if (found) setSelectedCurrency(found);
+                      }}
+                      className="w-full bg-white dark:bg-silver-gray border border-gray-200 dark:border-davys-gray rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-davys-gray focus:outline-none focus:ring-2 focus:ring-primary h-10 appearance-none font-semibold cursor-pointer transition-all duration-200"
+                    >
+                      {CURRENCIES.map(curr => (
+                        <option key={curr.code} value={curr.code} className="dark:bg-zinc-950 dark:text-white">
+                          {curr.name}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-500 dark:text-davys-gray">
+                      <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
+                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <p className="mt-2 text-[11px] text-gray-500 dark:text-silver-gray leading-normal">
+                    {selectedCurrency.code === 'INR' ? (
+                      <span>🇮🇳 Set to <strong>Indian Numbering Format (Lakhs & Crores)</strong>. Best for domestic loans.</span>
+                    ) : (
+                      <span>🌐 Set to <strong>Global Numbering Format (Millions & Billions)</strong>. Perfect for international analysis.</span>
+                    )}
+                  </p>
+                </div>
+
+                <div>
                   <Input 
                     label="Loan Amount (Principal)" 
                     type="number"
-                    icon={<IndianRupee size={16} />}
+                    icon={<span className="text-sm font-semibold text-gray-500 dark:text-silver-gray">{selectedCurrency.symbol}</span>}
                     value={inputs.principal}
                     onChange={(e) => handleInputChange('principal', e.target.value)}
                     tooltip="Enter the total loan principal amount"
@@ -349,6 +409,27 @@ const App: React.FC = () => {
                     Set to Today
                   </button>
                 </div>
+
+                <div>
+                  <Input 
+                    label="Net Monthly Income" 
+                    type="number"
+                    icon={<span className="text-sm font-semibold text-gray-500 dark:text-silver-gray">{selectedCurrency.symbol}</span>}
+                    value={inputs.monthlyIncome || ''}
+                    onChange={(e) => handleInputChange('monthlyIncome', e.target.value)}
+                    tooltip="Enter your net monthly income to evaluate if your EMI is safe (generally below 40% of income)"
+                    error={errors.monthlyIncome}
+                  />
+                  <input 
+                    type="range" 
+                    min="10000" 
+                    max="1000000" 
+                    step="5000"
+                    value={inputs.monthlyIncome || 0}
+                    onChange={(e) => handleInputChange('monthlyIncome', e.target.value)}
+                    className="w-full mt-2 h-2 bg-gray-200 dark:bg-davys-gray rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                  />
+                </div>
               </div>
             </div>
 
@@ -358,6 +439,9 @@ const App: React.FC = () => {
               onAddEvent={handleAddEvent} 
               onRemoveEvent={handleRemoveEvent}
               maxMonths={inputs.tenureMonths}
+              currencySymbol={selectedCurrency.symbol}
+              currencyCode={selectedCurrency.code}
+              currencyLocale={selectedCurrency.locale}
             />
           </div>
 
@@ -371,15 +455,27 @@ const App: React.FC = () => {
               originalTenure={inputs.tenureMonths}
               startDate={inputs.startDate}
               endDate={result.schedule[result.schedule.length - 1]?.date}
+              partPaymentMonthsSaved={partPaymentMonthsSaved}
+              monthlyIncome={inputs.monthlyIncome}
+              currencySymbol={selectedCurrency.symbol}
+              currencyCode={selectedCurrency.code}
+              currencyLocale={selectedCurrency.locale}
             />
 
             <AmortizationChart 
               data={result.schedule} 
               principal={inputs.principal} 
               totalInterest={result.totalInterest}
+              currencySymbol={selectedCurrency.symbol}
+              currencyCode={selectedCurrency.code}
+              currencyLocale={selectedCurrency.locale}
             />
 
-            <AmortizationTable schedule={result.schedule} />
+            <AmortizationTable 
+              schedule={result.schedule} 
+              currencyCode={selectedCurrency.code}
+              currencyLocale={selectedCurrency.locale}
+            />
           </div>
         </div>
       </main>
@@ -429,8 +525,8 @@ const App: React.FC = () => {
               className="bg-white dark:bg-silver-gray text-gray-900 dark:text-davys-gray pointer-events-auto rounded-xl p-4 shadow-lg border border-gray-100 dark:border-davys-gray/40 flex gap-3 items-start ring-1 ring-black/5"
             >
               {/* Icon */}
-              <div className="bg-green-500/10 text-green-600 dark:text-green-500 p-2 rounded-lg flex-shrink-0 animate-pulse">
-                <IndianRupee size={18} />
+              <div className="bg-green-500/10 text-green-600 dark:text-green-500 w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center animate-pulse font-bold text-sm">
+                {selectedCurrency.symbol}
               </div>
 
               {/* Toast details */}
@@ -439,7 +535,7 @@ const App: React.FC = () => {
                   Part Payment Added!
                 </p>
                 <p className="text-xs text-gray-500 dark:text-davys-gray mt-0.5">
-                  Month {toast.month}: {formatCurrency(toast.amount)} payment applied.
+                  Month {toast.month}: {formatCurrency(toast.amount, selectedCurrency.code, selectedCurrency.locale)} payment applied.
                 </p>
                 
                 {toast.monthsSaved > 0 ? (

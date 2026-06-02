@@ -137,10 +137,10 @@ export const calculateAmortizationSchedule = (
   };
 };
 
-export const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('en-IN', {
+export const formatCurrency = (value: number, currencyCode: string = 'INR', locale: string = 'en-IN') => {
+  return new Intl.NumberFormat(locale, {
     style: 'currency',
-    currency: 'INR', // Using INR as context implies EMI usually, but fits generic $ too if locale changed
+    currency: currencyCode,
     maximumFractionDigits: 0
   }).format(value);
 };

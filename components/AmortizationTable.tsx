@@ -4,9 +4,15 @@ import { formatCurrency } from '../utils/calculations';
 
 interface AmortizationTableProps {
   schedule: ScheduleItem[];
+  currencyCode: string;
+  currencyLocale: string;
 }
 
-export const AmortizationTable: React.FC<AmortizationTableProps> = ({ schedule }) => {
+export const AmortizationTable: React.FC<AmortizationTableProps> = ({ 
+  schedule,
+  currencyCode,
+  currencyLocale
+}) => {
   const [showDates, setShowDates] = React.useState(true);
 
   return (
@@ -41,20 +47,28 @@ export const AmortizationTable: React.FC<AmortizationTableProps> = ({ schedule }
                 <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-[10px] sm:text-sm font-medium text-gray-900 dark:text-davys-gray">
                   {showDates ? row.date : row.month}
                 </td>
-                <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-[10px] sm:text-sm text-right text-gray-500 dark:text-davys-gray">{formatCurrency(row.openingBalance)}</td>
-                <td className={`px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-[10px] sm:text-sm text-right font-medium transition-colors ${row.emiChanged ? 'text-indigo-600 dark:text-indigo-400' : 'text-primary dark:text-davys-gray'}`}>
-                  {formatCurrency(row.emi)}
+                <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-[10px] sm:text-sm text-right text-gray-500 dark:text-davys-gray">
+                  {formatCurrency(row.openingBalance, currencyCode, currencyLocale)}
                 </td>
-                <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-[10px] sm:text-sm text-right text-green-600 dark:text-green-700">{formatCurrency(row.principalComponent)}</td>
-                <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-[10px] sm:text-sm text-right text-orange-500 dark:text-orange-700">{formatCurrency(row.interestComponent)}</td>
+                <td className={`px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-[10px] sm:text-sm text-right font-medium transition-colors ${row.emiChanged ? 'text-indigo-600 dark:text-indigo-400' : 'text-primary dark:text-davys-gray'}`}>
+                  {formatCurrency(row.emi, currencyCode, currencyLocale)}
+                </td>
+                <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-[10px] sm:text-sm text-right text-green-600 dark:text-green-700">
+                  {formatCurrency(row.principalComponent, currencyCode, currencyLocale)}
+                </td>
+                <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-[10px] sm:text-sm text-right text-orange-500 dark:text-orange-700">
+                  {formatCurrency(row.interestComponent, currencyCode, currencyLocale)}
+                </td>
                 <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-[10px] sm:text-sm text-right text-gray-500 dark:text-davys-gray">
                   {row.prepayment > 0 ? (
                     <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[9px] sm:text-xs font-medium bg-green-100 dark:bg-green-900/10 text-green-800 dark:text-green-700">
-                      +{formatCurrency(row.prepayment)}
+                      +{formatCurrency(row.prepayment, currencyCode, currencyLocale)}
                     </span>
                   ) : '-'}
                 </td>
-                <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-[10px] sm:text-sm text-right text-gray-900 dark:text-davys-gray font-medium">{formatCurrency(row.closingBalance)}</td>
+                <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-[10px] sm:text-sm text-right text-gray-900 dark:text-davys-gray font-medium">
+                  {formatCurrency(row.closingBalance, currencyCode, currencyLocale)}
+                </td>
               </tr>
             ))}
           </tbody>

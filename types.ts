@@ -1,8 +1,29 @@
+export interface CurrencyConfig {
+  code: string;
+  name: string;
+  symbol: string;
+  locale: string;
+}
+
+export const CURRENCIES: CurrencyConfig[] = [
+  { code: 'INR', name: '🇮🇳 Indian Rupee (₹)', symbol: '₹', locale: 'en-IN' },
+  { code: 'USD', name: '🇺🇸 US Dollar ($)', symbol: '$', locale: 'en-US' },
+  { code: 'SGD', name: '🇸🇬 Singapore Dollar (S$)', symbol: 'S$', locale: 'en-SG' },
+  { code: 'EUR', name: '🇪🇺 Euro (€)', symbol: '€', locale: 'de-DE' },
+  { code: 'GBP', name: '🇬🇧 British Pound (£)', symbol: '£', locale: 'en-GB' },
+  { code: 'CAD', name: '🇨🇦 Canadian Dollar (C$)', symbol: 'C$', locale: 'en-CA' },
+  { code: 'AUD', name: '🇦🇺 Australian Dollar (A$)', symbol: 'A$', locale: 'en-AU' },
+  { code: 'AED', name: '🇦🇪 UAE Dirham (AED)', symbol: 'Dh', locale: 'en-AE' },
+  { code: 'JPY', name: '🇯🇵 Japanese Yen (¥)', symbol: '¥', locale: 'ja-JP' },
+  { code: 'CHF', name: '🇨🇭 Swiss Franc (CHF)', symbol: 'CHF', locale: 'de-CH' },
+];
+
 export interface LoanInput {
   principal: number;
   annualRate: number;
   tenureMonths: number;
   startDate?: string; // ISO date string
+  monthlyIncome?: number; // Hypothetical monthly income for EMI stress testing
 }
 
 export enum EventType {

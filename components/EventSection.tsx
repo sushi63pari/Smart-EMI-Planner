@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, IndianRupee, Percent, Calendar } from 'lucide-react';
+import { Plus, Trash2, Percent, Calendar } from 'lucide-react';
 import { LoanEvent, EventType, PartPaymentStrategy } from '../types';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
@@ -10,9 +10,20 @@ interface EventSectionProps {
   onAddEvent: (event: LoanEvent) => void;
   onRemoveEvent: (id: string) => void;
   maxMonths: number;
+  currencySymbol: string;
+  currencyCode: string;
+  currencyLocale: string;
 }
 
-export const EventSection: React.FC<EventSectionProps> = ({ events, onAddEvent, onRemoveEvent, maxMonths }) => {
+export const EventSection: React.FC<EventSectionProps> = ({ 
+  events, 
+  onAddEvent, 
+  onRemoveEvent, 
+  maxMonths,
+  currencySymbol,
+  currencyCode,
+  currencyLocale
+}) => {
   const [eventType, setEventType] = useState<EventType>(EventType.PART_PAYMENT);
   const [month, setMonth] = useState<number>(12);
   const [value, setValue] = useState<number>(10000);
@@ -88,7 +99,7 @@ export const EventSection: React.FC<EventSectionProps> = ({ events, onAddEvent, 
             step={eventType === EventType.RATE_CHANGE ? 0.1 : 1000}
             value={value}
             onChange={(e) => setValue(Number(e.target.value))}
-            icon={eventType === EventType.PART_PAYMENT ? <IndianRupee size={14} /> : undefined}
+            icon={eventType === EventType.PART_PAYMENT ? <span className="text-sm font-semibold text-gray-500 dark:text-silver-gray">{currencySymbol}</span> : undefined}
             suffix={eventType === EventType.RATE_CHANGE ? "%" : undefined}
             tooltip={eventType === EventType.PART_PAYMENT ? "Enter the part payment amount" : "Enter the new annual interest rate"}
           />
@@ -135,8 +146,8 @@ export const EventSection: React.FC<EventSectionProps> = ({ events, onAddEvent, 
             {events.map((event) => (
               <div key={event.id} className="flex items-center justify-between p-3 bg-white dark:bg-silver-gray border border-gray-100 dark:border-davys-gray rounded-lg shadow-sm text-xs sm:text-sm">
                 <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-full ${event.type === EventType.PART_PAYMENT ? 'bg-green-100 dark:bg-green-900/10 text-green-600 dark:text-green-700' : 'bg-amber-100 dark:bg-amber-900/10 text-amber-600 dark:text-amber-700'}`}>
-                    {event.type === EventType.PART_PAYMENT ? <IndianRupee size={14} /> : <Percent size={14} />}
+                  <div className={`p-2 rounded-full flex items-center justify-center w-8 h-8 ${event.type === EventType.PART_PAYMENT ? 'bg-green-100 dark:bg-green-900/10 text-green-600 dark:text-green-700' : 'bg-amber-100 dark:bg-amber-900/10 text-amber-600 dark:text-amber-700'}`}>
+                    {event.type === EventType.PART_PAYMENT ? <span className="text-xs font-bold leading-none">{currencySymbol}</span> : <Percent size={14} />}
                   </div>
                   <div>
                     <p className="font-medium text-gray-900 dark:text-davys-gray">
@@ -144,7 +155,7 @@ export const EventSection: React.FC<EventSectionProps> = ({ events, onAddEvent, 
                     </p>
                     <p className="text-[10px] sm:text-xs text-gray-500 dark:text-davys-gray">
                       {event.type === EventType.PART_PAYMENT 
-                        ? `${formatCurrency(event.value)} (${event.strategy === PartPaymentStrategy.REDUCE_EMI ? 'Reduce EMI' : 'Reduce Tenure'})` 
+                        ? `${formatCurrency(event.value, currencyCode, currencyLocale)} (${event.strategy === PartPaymentStrategy.REDUCE_EMI ? 'Reduce EMI' : 'Reduce Tenure'})` 
                         : `New Rate: ${event.value}%`}
                     </p>
                   </div>

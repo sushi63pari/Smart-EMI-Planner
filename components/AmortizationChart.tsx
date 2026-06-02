@@ -8,9 +8,19 @@ interface AmortizationChartProps {
   data: ScheduleItem[];
   principal: number;
   totalInterest: number;
+  currencySymbol: string;
+  currencyCode: string;
+  currencyLocale: string;
 }
 
-export const AmortizationChart: React.FC<AmortizationChartProps> = ({ data, principal, totalInterest }) => {
+export const AmortizationChart: React.FC<AmortizationChartProps> = ({ 
+  data, 
+  principal, 
+  totalInterest,
+  currencySymbol,
+  currencyCode,
+  currencyLocale
+}) => {
   const pieData = [
     { name: 'Principal', value: principal },
     { name: 'Total Interest', value: totalInterest },
@@ -63,7 +73,7 @@ export const AmortizationChart: React.FC<AmortizationChartProps> = ({ data, prin
               />
               <YAxis 
                 tick={{fill: 'var(--chart-text)', fontSize: 12}} 
-                tickFormatter={(val) => `₹${(val/1000).toFixed(0)}k`}
+                tickFormatter={(val) => `${currencySymbol}${(val/1000).toFixed(0)}k`}
                 tickLine={false}
                 axisLine={false}
               />
@@ -76,7 +86,7 @@ export const AmortizationChart: React.FC<AmortizationChartProps> = ({ data, prin
                   color: 'var(--chart-tooltip-text)'
                 }}
                 itemStyle={{ color: '#4F46E5' }}
-                formatter={(value: number) => formatCurrency(value)}
+                formatter={(value: number) => formatCurrency(value, currencyCode, currencyLocale)}
               />
               <Area 
                 type="monotone" 
@@ -132,7 +142,7 @@ export const AmortizationChart: React.FC<AmortizationChartProps> = ({ data, prin
                   backgroundColor: 'var(--chart-tooltip-bg)',
                   color: 'var(--chart-tooltip-text)'
                 }}
-                formatter={(val: number) => formatCurrency(val)} 
+                formatter={(val: number) => formatCurrency(val, currencyCode, currencyLocale)} 
               />
               <Legend verticalAlign="bottom" height={36}/>
             </PieChart>
@@ -150,7 +160,7 @@ export const AmortizationChart: React.FC<AmortizationChartProps> = ({ data, prin
                   transition={{ duration: 0.3 }}
                   className="text-sm font-bold text-gray-800 dark:text-davys-gray block"
                 >
-                  ₹{(totalPayable/1000).toFixed(1)}k
+                  {currencySymbol}{(totalPayable/1000).toFixed(1)}k
                 </motion.span>
               </AnimatePresence>
             </div>
@@ -185,7 +195,7 @@ export const AmortizationChart: React.FC<AmortizationChartProps> = ({ data, prin
                   backgroundColor: 'var(--chart-tooltip-bg)',
                   color: 'var(--chart-tooltip-text)'
                 }}
-                formatter={(value: number) => formatCurrency(value)}
+                formatter={(value: number) => formatCurrency(value, currencyCode, currencyLocale)}
               />
               <Legend />
               <Bar 
