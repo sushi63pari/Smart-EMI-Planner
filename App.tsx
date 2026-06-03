@@ -10,7 +10,7 @@ import { AmortizationTable } from './components/AmortizationTable';
 import { LoanEligibilityModal } from './components/LoanEligibilityModal';
 import { LoanCompareDashboard } from './components/LoanCompareDashboard';
 import { InflationImpact } from './components/InflationImpact';
-import { Calculator, Percent, Calendar, RotateCcw, Printer, Sun, Moon, Download, Loader2, AlertTriangle, Award, GitCompare } from 'lucide-react';
+import { Calculator, Percent, Calendar, RotateCcw, Printer, Sun, Moon, Download, Loader2, AlertTriangle, Award, GitCompare, HelpCircle } from 'lucide-react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -357,61 +357,91 @@ const App: React.FC = () => {
         return {
           standardMode: "मानक कैलकुलेटर",
           compareMode: "योजना तुलना मोड",
-          comparingBadge: "तुलना मोड सक्रिय - परिवर्तन वास्तविक समय में प्रतिबिंबित होते हैं"
+          comparingBadge: "तुलना मोड सक्रिय - परिवर्तन वास्तविक समय में प्रतिबिंबित होते हैं",
+          whyCompare: "तुलना क्यों करें?",
+          benefitsTitle: "परिदृश्य तुलना के लाभ",
+          tooltipBenefits: "अपने आधारभूत सेटिंग्स लॉक करें और रियल-टाइम में इनपुट बदलते समय ब्याज बचत, ईएमआई और समय की बचत की साइड-बाय-साइड तुलना करें।"
         };
       case 'ml':
         return {
           standardMode: "സ്റ്റാൻഡേർഡ് കാൽക്കുലേറ്റർ",
           compareMode: "പ്ലാൻ താരതമ്യ മോഡ്",
-          comparingBadge: "താരതമ്യ മോഡ് സജീവം - മാറ്റങ്ങൾ തത്സമയം കാണാം"
+          comparingBadge: "താരതമ്യ മോഡ് സജീവം - മാറ്റങ്ങൾ തത്സമയം കാണാം",
+          whyCompare: "എന്തിന് താരതമ്യം ചെയ്യണം?",
+          benefitsTitle: "താരതമ്യത്തിന്റെ പ്രയോജനങ്ങൾ",
+          tooltipBenefits: "മാറ്റങ്ങൾ വരുത്തുമ്പോൾ പലിശ ലാഭവും പ്രതിമാസ ഇഎംഐയും കാലാവധിയും തത്സമയം വശങ്ങളിലായി താരതമ്യം ചെയ്യാൻ നിങ്ങളുടെ അടിസ്ഥാന വിവരങ്ങൾ ലോക്ക് ചെയ്യുക."
         };
       case 'kn':
         return {
           standardMode: "ಸಾಮಾನ್ಯ ಕ್ಯಾಲ್ಕುಲೇಟರ್",
           compareMode: "ಯೋಜನೆ ಹೋಲಿಕೆ ಮೋಡ್",
-          comparingBadge: "ಹೋಲಿಕೆ ಮೋಡ್ ಸಕ್ರಿಯವಾಗಿದೆ - ಲೈವ್ ಹೋಲಿಕೆ ಲಭ್ಯವಿದೆ"
+          comparingBadge: "ಹೋಲಿಕೆ ಮೋಡ್ ಸಕ್ರಿಯವಾಗಿದೆ - ಲೈವ್ ಹೋಲಿಕೆ ಲಭ್ಯವಿದೆ",
+          whyCompare: "ಏಕೆ ಹೋಲಿಸಬೇಕು?",
+          benefitsTitle: "ಹೋಲಿಕೆಯ ಅನುಕೂಲಗಳು",
+          tooltipBenefits: "ನೀವು ನೈಜ ಸಮಯದಲ್ಲಿ ಬದಲಾವಣೆಗಳನ್ನು ಮಾಡುವಾಗ ಬಡ್ಡಿ ಉಳಿತಾಯ, ಮಾసಿಕ ಇಎಂಐ ಮತ್ತು ಅವಧಿಯ ಉಳಿತಾಯವನ್ನು ಅಕ್ಕಪಕ್ಕದಲ್ಲಿ ಹೋಲಿಸಲು ನಿಮ್ಮ ಮೂಲ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಲಾಕ್ ಮಾಡಿ."
         };
       case 'pa':
         return {
           standardMode: "ਸਟੈਂਡਰਡ ਕੈਲਕੁਲੇਟਰ",
           compareMode: "ਯੋਜਨਾ ਤੁਲਨਾ ਮੋਡ",
-          comparingBadge: "ਤੁਲਨਾ ਮੋਡ ਸਰਗਰਮ - ਬਦਲਾਅ ਲਾਈਵ ਦਿਖਾਈ ਦੇਣਗੇ"
+          comparingBadge: "ਤੁਲਨਾ ਮੋਡ ਸਰਗਰਮ - ਬਦਲਾਅ ਲਾਈਵ ਦਿਖਾਈ ਦੇਣਗੇ",
+          whyCompare: "ਤੁਲਨਾ ਕਿਉਂ ਕਰੀਏ?",
+          benefitsTitle: "ਤੁਲਨਾ ਦੇ ਲਾਭ",
+          tooltipBenefits: "ਰੀਅਲ-ਟਾਈਮ ਵਿੱਚ ਇਨਪੁਟਸ ਨੂੰ ਐਡਜਸਟ ਕਰਦੇ ਸਮੇਂ ਵਿਆਜ ਬਚਤ, ਮਾਸਿਕ ਈਐਮਆਈ, ਅਤੇ ਮਾਸਿਕ ਬਚਤ ਦੀ ਤੁਲਨਾ ਕਰਨ ਲਈ ਆਪਣੀ ਬੇਸਲਾਈਨ ਸੈਟਿੰਗਾਂ ਨੂੰ ਲਾਕ ਕਰੋ।"
         };
       case 'ta':
         return {
           standardMode: "நிலையான கால்குலேட்டர்",
           compareMode: "ஒப்பீட்டு முறை",
-          comparingBadge: "ஒப்பீட்டு முறை செயலில் உள்ளது - மாற்றங்கள் உடனுக்குடன் ஒப்பிடப்படும்"
+          comparingBadge: "ஒப்பீட்டு முறை செயலில் உள்ளது - மாற்றங்கள் உடனுக்குடன் ஒப்பிடப்படும்",
+          whyCompare: "ஏன் ஒப்பிட வேண்டும்?",
+          benefitsTitle: "ஒப்பீட்டின் நன்மைகள்",
+          tooltipBenefits: "நீங்கள் அமைப்புகளை மாற்றும்போது வட்டிச் சேமிப்பு, மாதாந்திர இஎம்ஐ மற்றும் காலக் குறைப்பு ஆகியவற்றை உடனுக்குடன் ஒப்பிட்டுப் பார்க்க அடிப்படை அமைப்புகளைப் பூட்டுங்கள்."
         };
       case 'te':
         return {
           standardMode: "సాధారణ కాలిక్యులేటర్",
           compareMode: "ఈడబ్ల్యూఐ పోలిక మోడ్",
-          comparingBadge: "పోలిక మోడ్ సక్రియంగా ఉంది - మార్పులు లైవ్ అవుతాయి"
+          comparingBadge: "పోలిక మోడ్ సక్రియంగా ఉంది - మార్పులు లైవ్ అవుతాయి",
+          whyCompare: "ఎందుకు పోల్చాలి?",
+          benefitsTitle: "పోలిక వలన ప్రయోజనాలు",
+          tooltipBenefits: "రియల్ టైమ్‌లో ఈఎంఐ మరియు వడ్డీ పొదుపులను పక్కపక్కనే పోల్చి చూసేందుకు మీ అసలు రుణ వివరాలను తులనాత్మక మోడ్‌లో లాక్ చేయండి."
         };
       case 'bn':
         return {
           standardMode: "সাধারণ ক্যালকুলেটর",
           compareMode: "পরিকল্পনা তুলনা মোড",
-          comparingBadge: "তুলনা মোড সক্রিয় - পরিবর্তন রিয়েল-টাইমে দেখা যাবে"
+          comparingBadge: "তুলনা মোড सक्रिय - পরিবর্তন রিয়েল-টাইমে দেখা যাবে",
+          whyCompare: "কেন তুলনা করবেন?",
+          benefitsTitle: "তুলনা করার সুবিধা",
+          tooltipBenefits: "বাস্তব সময়ে পরিবর্তন করার সাথে সাথে সুদের সঞ্চয়, মাসিক ইএমআই এবং মেয়াদের সাশ্রয় পাশাপাশি তুলনা করার জন্য আপনার বেসলাইন লক করুন।"
         };
       case 'mr':
         return {
           standardMode: "मानक कॅल्क्युलेटर",
           compareMode: "योजना तुलना मोड",
-          comparingBadge: "तुलना मोड सक्रिय - बदल रिअल-टाईममध्ये दिसतील"
+          comparingBadge: "तुलना मोड सक्रिय - बदल रिअल-टाईममध्ये दिसतील",
+          whyCompare: "तुलना का करावी?",
+          benefitsTitle: "तुलना करण्याचे फायदे",
+          tooltipBenefits: "रिअल-टाईममध्ये बदल करताना व्याज बचत, मासिक ईएमआय आणि कालावधी कपात शेजारी-शेजारी तुलना करण्यासाठी आपले बेसलाईन लॉक करा."
         };
       case 'fr':
         return {
           standardMode: "Calculateur Standard",
           compareMode: "Mode Comparateur",
-          comparingBadge: "Mode comparaison actif - Les ajustements comparent en direct"
+          comparingBadge: "Mode comparaison actif - Les ajustements comparent en direct",
+          whyCompare: "Pourquoi comparer ?",
+          benefitsTitle: "Avantages du comparateur",
+          tooltipBenefits: "Figez votre scénario de référence pour comparer en temps réel l'impact de vos ajustements sur vos taux, vos mensualités et vos gains d'intérêts."
         };
       default:
         return {
           standardMode: "Standard Calculator",
           compareMode: "Compare Scenarios Mode",
-          comparingBadge: "Comparing Scenarios Active — Adjust inputs below to see side-by-side gains/losses!"
+          comparingBadge: "Comparing Scenarios Active — Adjust inputs below to see side-by-side gains/losses!",
+          whyCompare: "Why Compare?",
+          benefitsTitle: "Benefits of Scenario Comparison",
+          tooltipBenefits: "Lock your baseline inputs to compare lifetime interest savings, net EMIs, and tenure reduction side-by-side as you adjust inputs in real-time."
         };
     }
   };
@@ -751,31 +781,60 @@ const App: React.FC = () => {
       <main ref={printRef} className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 mt-3 sm:mt-8">
         
         {/* View Mode Switcher */}
-        <div className="mb-6 bg-white dark:bg-silver-gray p-1 rounded-xl shadow-sm border border-gray-200/60 dark:border-davys-gray/40 flex items-center justify-between no-print max-w-sm">
-          <div className="flex w-full">
-            <button
-              onClick={() => setCompareMode(false)}
-              className={`flex-1 py-1.5 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-all duration-200 select-none cursor-pointer ${
-                !compareMode 
-                  ? 'bg-slate-100 dark:bg-zinc-800 text-gray-900 dark:text-white shadow-sm' 
-                  : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-zinc-200 bg-transparent'
-              }`}
-            >
-              <Calculator size={14} />
-              <span>{getCompareModeStrings(language).standardMode}</span>
-            </button>
-            <button
-              id="compare-mode-toggle-btn"
-              onClick={enableCompareMode}
-              className={`flex-1 py-1.5 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-all duration-200 select-none cursor-pointer ${
-                compareMode 
-                  ? 'bg-indigo-600 dark:bg-indigo-600 text-white shadow-sm font-extrabold' 
-                  : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-zinc-200 bg-transparent'
-              }`}
-            >
-              <GitCompare size={14} className={compareMode ? "animate-spin text-white" : ""} />
-              <span>{getCompareModeStrings(language).compareMode}</span>
-            </button>
+        <div className="mb-6 flex flex-wrap items-center gap-2.5 no-print">
+          <div className="bg-white dark:bg-silver-gray p-1 rounded-xl shadow-sm border border-gray-200/60 dark:border-davys-gray/40 flex items-center justify-between max-w-sm flex-1 sm:flex-none">
+            <div className="flex w-full">
+              <button
+                onClick={() => setCompareMode(false)}
+                className={`flex-1 py-1.5 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-all duration-200 select-none cursor-pointer ${
+                  !compareMode 
+                    ? 'bg-slate-100 dark:bg-zinc-800 text-gray-900 dark:text-white shadow-sm' 
+                    : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-zinc-200 bg-transparent'
+                }`}
+              >
+                <Calculator size={14} />
+                <span>{getCompareModeStrings(language).standardMode}</span>
+              </button>
+              <button
+                id="compare-mode-toggle-btn"
+                onClick={enableCompareMode}
+                className={`relative flex-1 py-1.5 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-all duration-200 select-none cursor-pointer ${
+                  compareMode 
+                    ? 'bg-indigo-600 dark:bg-indigo-600 text-white shadow-sm font-extrabold' 
+                    : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-zinc-200 bg-transparent'
+                }`}
+              >
+                <GitCompare size={14} className={compareMode ? "animate-spin text-white" : ""} />
+                <span>{getCompareModeStrings(language).compareMode}</span>
+                {compareMode && (
+                  <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Benefits Legend/Tooltip */}
+          <div className="relative group">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50/40 hover:bg-slate-100 dark:bg-indigo-950/20 dark:hover:bg-indigo-900/35 text-[11px] text-indigo-750 dark:text-indigo-300 font-bold border border-indigo-150/15 dark:border-indigo-900/20 transition-all duration-200 cursor-pointer shadow-sm">
+              <HelpCircle size={13} className="text-indigo-650 dark:text-indigo-455 animate-pulse" />
+              <span>{getCompareModeStrings(language).whyCompare}</span>
+            </div>
+            
+            {/* Tooltip Content Floating Above */}
+            <div className="absolute left-0 bottom-full mb-3.5 w-72 xs:w-80 bg-slate-900 dark:bg-zinc-950 text-white text-[11px] leading-relaxed p-4 rounded-xl shadow-xl border border-slate-800 dark:border-zinc-800 opacity-0 group-hover:opacity-100 transition-all pointer-events-none duration-250 z-40 transform translate-y-1 group-hover:translate-y-0">
+              <div className="font-bold text-xs text-indigo-300 mb-1.5 flex items-center gap-1.5">
+                <GitCompare size={13} className="text-indigo-400" />
+                <span>{getCompareModeStrings(language).benefitsTitle}</span>
+              </div>
+              <p className="text-gray-300 dark:text-gray-300 font-sans font-medium">
+                {getCompareModeStrings(language).tooltipBenefits}
+              </p>
+              {/* Tooltip Arrow pointing down */}
+              <div className="absolute top-full left-6 -mt-1 w-2.5 h-2.5 bg-slate-900 dark:bg-zinc-950 border-r border-b border-slate-800 dark:border-zinc-800 transform rotate-45" />
+            </div>
           </div>
         </div>
 
