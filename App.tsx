@@ -16,6 +16,7 @@ import html2canvas from 'html2canvas';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TRANSLATIONS, LANGUAGES, AppTranslations } from './utils/translations';
 import { LOAN_TYPES, getLoanTypeLabel, getLoanTypeAvgMessage } from './utils/loanTypes';
+import { Analytics } from '@vercel/analytics/react';
 
 // Broad defensive fallback so that if an external evaluator looks up window.translations[anyKey].eventSectionTitle, it NEVER throws undefined!
 if (typeof window !== 'undefined') {
@@ -208,7 +209,7 @@ const getEMIThresholdStringsByLanguage = (lang: string) => {
         label: "ईएमआई सीमा प्रतिशत",
         tooltip: "मासिक आय का अधिकतम प्रतिशत जो ईएमआई भुगतान के रूप में सुरक्षित रूप से आवंटित किया जा सकता है।",
         warningMsg: "ईएमआई निर्धारित सीमा (%THRESHOLD%%) से अधिक है!",
-        safeMsg: "✓ आपकी ईएमआई निर्धारित %THRESHOLD%% सीमा के भीतर सुरक्षित है।"
+        safeMsg: "�� आपकी ईएमआई निर्धारित %THRESHOLD%% सीमा के भीतर सुरक्षित है।"
       };
     case 'ml':
       return {
@@ -1294,6 +1295,7 @@ const App: React.FC = () => {
           })}
         </AnimatePresence>
       </div>
+      <Analytics />
     </div>
   );
 };
