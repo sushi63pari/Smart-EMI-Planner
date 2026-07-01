@@ -1203,6 +1203,7 @@ const App: React.FC = () => {
         currencyLocale={selectedCurrency.locale}
         onApplyPrincipal={handleApplyPrincipal}
         translations={t}
+        language={language}
       />
 
       {/* Reset Confirmation Modal */}
